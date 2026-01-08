@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { prisma } from '@/lib/db'
 import { RecipeCard } from '@/components/recipes/RecipeCard'
-import { Recipe } from '@/types/recipe'
+import { Recipe, parseRecipeFromDb } from '@/types/recipe'
 
 export const metadata: Metadata = {
   title: 'Svi Recepti',
@@ -13,11 +13,7 @@ async function getRecipes(): Promise<Recipe[]> {
     orderBy: { createdAt: 'desc' }
   })
   
-  return recipes.map(recipe => ({
-    ...recipe,
-    ingredients: recipe.ingredients as Recipe['ingredients'],
-    steps: recipe.steps as Recipe['steps'],
-  }))
+  return recipes.map(parseRecipeFromDb)
 }
 
 export default async function RecipesPage() {
@@ -78,4 +74,3 @@ export default async function RecipesPage() {
     </div>
   )
 }
-

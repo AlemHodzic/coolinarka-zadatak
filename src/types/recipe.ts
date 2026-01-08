@@ -85,3 +85,31 @@ export const prepMethodLabels: Record<PrepMethod, string> = {
   STEAMING: 'Kuhanje na pari'
 }
 
+// Helper to parse recipe from database (JSON strings to objects)
+export function parseRecipeFromDb(dbRecipe: {
+  id: string
+  slug: string
+  title: string
+  lead: string
+  imageId: string
+  prepTime: number
+  servings: number
+  difficulty: string
+  mealGroup: string
+  prepMethod: string
+  tags: string
+  ingredients: string
+  steps: string
+  createdAt: Date
+  updatedAt: Date
+}): Recipe {
+  return {
+    ...dbRecipe,
+    difficulty: dbRecipe.difficulty as Difficulty,
+    mealGroup: dbRecipe.mealGroup as MealGroup,
+    prepMethod: dbRecipe.prepMethod as PrepMethod,
+    tags: JSON.parse(dbRecipe.tags),
+    ingredients: JSON.parse(dbRecipe.ingredients),
+    steps: JSON.parse(dbRecipe.steps),
+  }
+}

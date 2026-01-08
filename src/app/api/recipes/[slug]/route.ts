@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { recipeUpdateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
+import { parseRecipeFromDb } from '@/types/recipe'
 
 interface RouteParams {
   params: Promise<{ slug: string }>
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    return NextResponse.json(recipe)
+    return NextResponse.json(parseRecipeFromDb(recipe))
   } catch (error) {
     console.error('Failed to fetch recipe:', error)
     return NextResponse.json(
@@ -64,15 +65,26 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       newSlug = await generateUniqueSlug(data.title, existing.id)
     }
 
+    const updateData: Record<string, unknown> = { slug: newSlug }
+    
+    if (data.title !== undefined) updateData.title = data.title
+    if (data.lead !== undefined) updateData.lead = data.lead
+    if (data.imageId !== undefined) updateData.imageId = data.imageId
+    if (data.prepTime !== undefined) updateData.prepTime = data.prepTime
+    if (data.servings !== undefined) updateData.servings = data.servings
+    if (data.difficulty !== undefined) updateData.difficulty = data.difficulty
+    if (data.mealGroup !== undefined) updateData.mealGroup = data.mealGroup
+    if (data.prepMethod !== undefined) updateData.prepMethod = data.prepMethod
+    if (data.tags !== undefined) updateData.tags = JSON.stringify(data.tags)
+    if (data.ingredients !== undefined) updateData.ingredients = JSON.stringify(data.ingredients)
+    if (data.steps !== undefined) updateData.steps = JSON.stringify(data.steps)
+
     const recipe = await prisma.recipe.update({
       where: { slug },
-      data: {
-        ...data,
-        slug: newSlug
-      }
+      data: updateData
     })
 
-    return NextResponse.json(recipe)
+    return NextResponse.json(parseRecipeFromDb(recipe))
   } catch (error) {
     console.error('Failed to update recipe:', error)
     return NextResponse.json(
@@ -110,4 +122,3 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     )
   }
 }
-

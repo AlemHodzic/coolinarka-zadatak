@@ -37,10 +37,11 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 | Layer | Technology | Why |
 |-------|------------|-----|
 | **Framework** | Next.js 14 (App Router) | SSR/SSG for SEO, API routes for backend, best DX |
-| **Database** | PostgreSQL + Prisma | Type-safe queries, migrations, excellent tooling |
+| **Database** | SQLite (dev) / PostgreSQL (prod) | Zero-config local dev, production-ready in cloud |
+| **ORM** | Prisma | Type-safe queries, migrations, excellent tooling |
 | **Styling** | Tailwind CSS | Utility-first, rapid development, consistent design |
 | **Validation** | Zod | Runtime type validation with great TypeScript integration |
-| **CDN** | Cloudinary | Real image CDN with transformations, free tier |
+| **Images** | Cloudinary / Unsplash fallback | Real CDN in prod, placeholder images for local dev |
 | **Language** | TypeScript | End-to-end type safety |
 | **Deployment** | Vercel | Native Next.js support, edge functions, global CDN |
 
@@ -94,61 +95,61 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Quick Start (Zero Config!)
 
-- Node.js 18+
-- PostgreSQL database (local or cloud)
-- Cloudinary account (free tier works)
-
-### 1. Clone and Install
+The app works out of the box with **no external services required**. Just run:
 
 ```bash
-git clone <repository-url>
-cd zadatak
+# 1. Install dependencies
 npm install
-```
 
-### 2. Environment Setup
+# 2. Set up database and seed data (automatic!)
+npm run setup
 
-Create a `.env` file:
-
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/coolinarika?schema=public"
-
-# Cloudinary (get from cloudinary.com dashboard)
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
-```
-
-### 3. Database Setup
-
-```bash
-# Push schema to database
-npm run db:push
-
-# Seed with sample recipes
-npm run db:seed
-```
-
-### 4. Upload Images to Cloudinary
-
-Upload images to your Cloudinary account under the `recepti/` folder with these names:
-- `recepti/sarma`
-- `recepti/cevapi`
-- `recepti/burek`
-- `recepti/palacinke`
-- `recepti/cokoladna-torta`
-- `recepti/bosanski-lonac`
-- `recepti/juha-od-rajcice`
-- `recepti/shopska-salata`
-
-### 5. Run Development Server
-
-```bash
+# 3. Start the app
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000) - you should see 8 recipes with images!
+
+**That's it!** The app uses:
+- **SQLite** - File-based database, no setup needed
+- **Placeholder images** - Beautiful Unsplash images, no Cloudinary needed
+
+---
+
+### Production Setup (Optional)
+
+For production deployment, you can optionally configure:
+
+#### PostgreSQL Database
+
+1. Create a database on [Neon](https://neon.tech) (free) or [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
+2. Update `prisma/schema.prisma`:
+   ```prisma
+   datasource db {
+     provider = "postgresql"  // Change from "sqlite"
+     url      = env("DATABASE_URL")
+   }
+   ```
+3. Update `.env` with your PostgreSQL connection string
+
+#### Cloudinary CDN (Custom Images)
+
+1. Create a free account at [cloudinary.com](https://cloudinary.com)
+2. Add to `.env`:
+   ```env
+   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+   ```
+3. Upload images to `recepti/` folder with names: `sarma`, `cevapi`, `burek`, etc.
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Database errors | Delete `prisma/dev.db` and run `npm run setup` again |
+| Port 3000 in use | Run `npm run dev -- -p 3001` |
+| Prisma errors | Run `npx prisma generate` |
 
 ---
 
@@ -216,8 +217,8 @@ Response: `200 OK`
     "tags": ["tradicionalno", "zimsko"],
     "ingredients": [...],
     "steps": [...],
-    "createdAt": "2024-...",
-    "updatedAt": "2024-..."
+    "createdAt": "2026-...",
+    "updatedAt": "2026-..."
   }
 ]
 ```

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { recipeCreateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
+import { parseRecipeFromDb } from '@/types/recipe'
 
 export async function GET() {
   try {
@@ -9,7 +10,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(recipes)
+    return NextResponse.json(recipes.map(parseRecipeFromDb))
   } catch (error) {
     console.error('Failed to fetch recipes:', error)
     return NextResponse.json(
@@ -36,12 +37,22 @@ export async function POST(request: NextRequest) {
 
     const recipe = await prisma.recipe.create({
       data: {
-        ...data,
-        slug
+        title: data.title,
+        slug,
+        lead: data.lead,
+        imageId: data.imageId,
+        prepTime: data.prepTime,
+        servings: data.servings,
+        difficulty: data.difficulty,
+        mealGroup: data.mealGroup,
+        prepMethod: data.prepMethod,
+        tags: JSON.stringify(data.tags),
+        ingredients: JSON.stringify(data.ingredients),
+        steps: JSON.stringify(data.steps),
       }
     })
 
-    return NextResponse.json(recipe, { status: 201 })
+    return NextResponse.json(parseRecipeFromDb(recipe), { status: 201 })
   } catch (error) {
     console.error('Failed to create recipe:', error)
     return NextResponse.json(
@@ -50,4 +61,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

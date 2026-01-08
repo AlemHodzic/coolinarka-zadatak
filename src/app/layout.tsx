@@ -61,7 +61,7 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center text-warm-600">
               <p className="font-display text-lg mb-2">Coolinarika Recepti</p>
-              <p className="text-sm">© 2024 Sva prava pridržana</p>
+              <p className="text-sm">© 2026 Sva prava pridržana</p>
             </div>
           </div>
         </footer>
