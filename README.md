@@ -23,6 +23,10 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 
 - **Recipe List View** (`/recepti`) - Browse all recipes with filtering by difficulty, meal group
 - **Recipe Detail View** (`/recepti/[slug]`) - Full recipe with ingredients, steps, and metadata
+- **Admin Panel** (`/admin`) - Protected admin area for recipe management
+  - NextAuth.js authentication with credentials
+  - Create, edit, and delete recipes via intuitive forms
+  - Middleware-protected routes
 - **Full CRUD API** - Create, read, update, delete recipes via REST API
 - **Real CDN Integration** - Cloudinary for optimized image delivery with on-the-fly transformations
 - **SEO Optimized** - Dynamic metadata, Open Graph tags, JSON-LD structured data
@@ -39,6 +43,7 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 | **Framework** | Next.js 14 (App Router) | SSR/SSG for SEO, API routes for backend, best DX |
 | **Database** | SQLite (dev) / PostgreSQL (prod) | Zero-config local dev, production-ready in cloud |
 | **ORM** | Prisma | Type-safe queries, migrations, excellent tooling |
+| **Auth** | NextAuth.js v5 | Industry standard, JWT sessions, middleware protection |
 | **Styling** | Tailwind CSS | Utility-first, rapid development, consistent design |
 | **Validation** | Zod | Runtime type validation with great TypeScript integration |
 | **Images** | Cloudinary / Unsplash fallback | Real CDN in prod, placeholder images for local dev |
@@ -58,9 +63,15 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Next.js Application                         │
 │  ┌─────────────────────────────────────────────────────────────┐│
+│  │                       Middleware                             ││
+│  │  • Auth check for /admin/* routes                           ││
+│  │  • JWT session validation                                    ││
+│  └─────────────────────────────────────────────────────────────┘│
+│  ┌─────────────────────────────────────────────────────────────┐│
 │  │                     App Router (SSR/SSG)                    ││
 │  │  • /recepti           → Server Component (SSR)              ││
 │  │  • /recepti/[slug]    → Static + ISR (revalidate: 3600)     ││
+│  │  • /admin/*           → Protected admin routes              ││
 │  └─────────────────────────────────────────────────────────────┘│
 │  ┌─────────────────────────────────────────────────────────────┐│
 │  │                    API Route Handlers                        ││
@@ -69,6 +80,7 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 │  │  • GET    /api/recipes/:slug → Get single recipe             ││
 │  │  • PUT    /api/recipes/:slug → Update recipe                 ││
 │  │  • DELETE /api/recipes/:slug → Delete recipe                 ││
+│  │  • /api/auth/*               → NextAuth.js handlers          ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
                 │                                    │
@@ -159,35 +171,93 @@ For production deployment, you can optionally configure:
 src/
 ├── app/
 │   ├── api/
+│   │   ├── auth/[...nextauth]/   # NextAuth.js route handlers
 │   │   └── recipes/
 │   │       ├── route.ts          # GET all, POST
 │   │       └── [slug]/
 │   │           └── route.ts      # GET one, PUT, DELETE
+│   ├── admin/
+│   │   ├── layout.tsx            # Admin layout with navigation
+│   │   ├── login/page.tsx        # Admin login page
+│   │   └── recepti/
+│   │       ├── page.tsx          # Recipe management list
+│   │       ├── new/page.tsx      # Create recipe form
+│   │       └── [slug]/edit/      # Edit recipe form
 │   ├── recepti/
 │   │   ├── page.tsx              # Recipe list (SSR)
 │   │   ├── loading.tsx           # Loading skeleton
 │   │   └── [slug]/
 │   │       ├── page.tsx          # Recipe detail (SSG + ISR)
 │   │       └── loading.tsx       # Loading skeleton
-│   ├── layout.tsx                # Root layout with header/footer
+│   ├── layout.tsx                # Root layout
 │   ├── globals.css               # Global styles + Tailwind
 │   └── not-found.tsx             # 404 page
 ├── components/
+│   ├── admin/
+│   │   ├── DeleteButton.tsx      # Delete confirmation
+│   │   ├── RecipeForm.tsx        # Recipe create/edit form
+│   │   └── SignOutButton.tsx     # Logout button
+│   ├── providers/
+│   │   └── SessionProvider.tsx   # NextAuth session provider
 │   ├── ui/
 │   │   └── Badge.tsx             # Reusable badge components
 │   └── recipes/
 │       └── RecipeCard.tsx        # Recipe card for list view
 ├── lib/
+│   ├── auth.ts                   # NextAuth.js configuration
 │   ├── db.ts                     # Prisma client singleton
 │   ├── cloudinary.ts             # CDN URL builder
 │   ├── validation.ts             # Zod schemas
 │   └── slug.ts                   # Slug generation
+├── middleware.ts                 # Auth middleware for /admin/*
 └── types/
     └── recipe.ts                 # TypeScript interfaces
 
 prisma/
 ├── schema.prisma                 # Database schema
 └── seed.ts                       # Seed data script
+```
+
+---
+
+## 🔐 Admin Panel
+
+The application includes a protected admin panel for managing recipes.
+
+### Access
+- **URL**: `/admin/login`
+- **Default credentials**: `admin` / `admin123`
+
+### Features
+- **Recipe Management**: Create, edit, and delete recipes
+- **Form Validation**: Client-side and server-side validation
+- **Protected Routes**: Middleware-based authentication
+- **JWT Sessions**: Secure, stateless authentication
+
+### Configuration
+
+Set custom admin credentials via environment variables:
+
+```env
+ADMIN_USERNAME="your-username"
+ADMIN_PASSWORD="your-password"
+AUTH_SECRET="your-secret-key"  # Generate with: openssl rand -base64 32
+```
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Admin Authentication Flow                 │
+├─────────────────────────────────────────────────────────────┤
+│  1. User visits /admin/*                                     │
+│  2. Middleware checks for valid JWT session                  │
+│  3. If no session → redirect to /admin/login                 │
+│  4. User enters credentials                                  │
+│  5. NextAuth validates against env vars                      │
+│  6. On success → JWT issued, redirect to /admin/recepti      │
+│  7. All admin routes now accessible                          │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---

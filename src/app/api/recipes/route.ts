@@ -24,7 +24,21 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const validation = recipeCreateSchema.safeParse(body)
+    // Parse JSON strings to arrays if needed
+    const parsedBody = {
+      ...body,
+      ingredients: typeof body.ingredients === 'string' 
+        ? JSON.parse(body.ingredients) 
+        : body.ingredients,
+      steps: typeof body.steps === 'string' 
+        ? JSON.parse(body.steps) 
+        : body.steps,
+      tags: typeof body.tags === 'string'
+        ? JSON.parse(body.tags)
+        : body.tags
+    }
+    
+    const validation = recipeCreateSchema.safeParse(parsedBody)
     if (!validation.success) {
       return NextResponse.json(
         { error: 'Nevaljani podaci', details: validation.error.flatten() },

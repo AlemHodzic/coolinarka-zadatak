@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const ingredientSchema = z.object({
   name: z.string().min(1, 'Naziv sastojka je obavezan'),
-  quantity: z.string().min(1, 'Količina je obavezna'),
+  quantity: z.string(), // Optional - can be empty for "po ukusu" (to taste)
   unit: z.string()
 })
 

@@ -49,7 +49,21 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const validation = recipeUpdateSchema.safeParse(body)
+    // Parse JSON strings to arrays if needed
+    const parsedBody = {
+      ...body,
+      ingredients: typeof body.ingredients === 'string' 
+        ? JSON.parse(body.ingredients) 
+        : body.ingredients,
+      steps: typeof body.steps === 'string' 
+        ? JSON.parse(body.steps) 
+        : body.steps,
+      tags: typeof body.tags === 'string'
+        ? JSON.parse(body.tags)
+        : body.tags
+    }
+
+    const validation = recipeUpdateSchema.safeParse(parsedBody)
     if (!validation.success) {
       return NextResponse.json(
         { error: 'Nevaljani podaci', details: validation.error.flatten() },
