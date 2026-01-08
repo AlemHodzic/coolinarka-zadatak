@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
-  // Prevent hydration mismatch by only rendering form after mount
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -42,7 +41,6 @@ export default function LoginPage() {
     }
   }
 
-  // Show loading state until client-side hydration is complete
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-warm-50 px-4">

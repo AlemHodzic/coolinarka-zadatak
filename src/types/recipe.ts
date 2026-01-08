@@ -31,35 +31,6 @@ export interface Recipe {
   updatedAt: Date
 }
 
-export interface RecipeCreateInput {
-  title: string
-  lead: string
-  imageId: string
-  prepTime: number
-  servings: number
-  difficulty: Difficulty
-  mealGroup: MealGroup
-  prepMethod: PrepMethod
-  tags: string[]
-  ingredients: Ingredient[]
-  steps: Step[]
-}
-
-export interface RecipeUpdateInput {
-  title?: string
-  lead?: string
-  imageId?: string
-  prepTime?: number
-  servings?: number
-  difficulty?: Difficulty
-  mealGroup?: MealGroup
-  prepMethod?: PrepMethod
-  tags?: string[]
-  ingredients?: Ingredient[]
-  steps?: Step[]
-}
-
-// Croatian translations for display
 export const difficultyLabels: Record<Difficulty, string> = {
   EASY: 'Jednostavno',
   MEDIUM: 'Srednje zahtjevno',
@@ -85,7 +56,6 @@ export const prepMethodLabels: Record<PrepMethod, string> = {
   STEAMING: 'Kuhanje na pari'
 }
 
-// Helper to parse recipe from database (JSON strings to objects)
 export function parseRecipeFromDb(dbRecipe: {
   id: string
   slug: string

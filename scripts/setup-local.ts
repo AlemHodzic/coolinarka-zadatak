@@ -1,7 +1,3 @@
-/**
- * Local development setup script
- * Temporarily switches to SQLite for easy local development
- */
 import { execSync } from 'child_process'
 import { writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'

@@ -23,8 +23,6 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    // Parse JSON strings to arrays if needed
     const parsedBody = {
       ...body,
       ingredients: typeof body.ingredients === 'string' 

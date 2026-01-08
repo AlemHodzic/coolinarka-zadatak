@@ -21,7 +21,6 @@ export default async function EditRecipePage({ params }: PageProps) {
     notFound()
   }
 
-  // Parse JSON fields for the form
   const ingredients = typeof recipe.ingredients === 'string' 
     ? JSON.parse(recipe.ingredients) 
     : recipe.ingredients

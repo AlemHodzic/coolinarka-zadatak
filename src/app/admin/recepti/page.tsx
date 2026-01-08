@@ -80,7 +80,7 @@ export default async function AdminRecipesPage() {
                     >
                       Uredi
                     </Link>
-                    <DeleteButton slug={recipe.slug} title={recipe.title} />
+                    <DeleteButton slug={recipe.slug} />
                   </div>
                 </td>
               </tr>

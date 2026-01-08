@@ -80,7 +80,6 @@ export default async function RecipePage({ params }: PageProps) {
 
   const heroUrl = getHeroUrl(recipe.imageId)
 
-  // JSON-LD structured data for SEO
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Recipe',

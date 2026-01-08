@@ -6,15 +6,12 @@ export default auth((req) => {
   const isAdminRoute = req.nextUrl.pathname.startsWith('/admin')
   const isLoginPage = req.nextUrl.pathname === '/admin/login'
 
-  // Allow access to login page
   if (isLoginPage) {
-    if (isLoggedIn) {
-      return NextResponse.redirect(new URL('/admin/recepti', req.url))
-    }
-    return NextResponse.next()
+    return isLoggedIn 
+      ? NextResponse.redirect(new URL('/admin/recepti', req.url))
+      : NextResponse.next()
   }
 
-  // Protect admin routes
   if (isAdminRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL('/admin/login', req.url))
   }

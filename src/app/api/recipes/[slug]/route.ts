@@ -49,7 +49,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Parse JSON strings to arrays if needed
     const parsedBody = {
       ...body,
       ingredients: typeof body.ingredients === 'string' 
@@ -74,7 +73,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const data = validation.data
     let newSlug = slug
 
-    // Generate new slug if title changed
     if (data.title && data.title !== existing.title) {
       newSlug = await generateUniqueSlug(data.title, existing.id)
     }

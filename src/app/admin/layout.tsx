@@ -1,5 +1,4 @@
 import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { SignOutButton } from '@/components/admin/SignOutButton'
 
@@ -10,7 +9,6 @@ export default async function AdminLayout({
 }) {
   const session = await auth()
   
-  // Login page doesn't need the admin chrome
   if (!session) {
     return <>{children}</>
   }

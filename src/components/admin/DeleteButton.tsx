@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation'
 
 interface DeleteButtonProps {
   slug: string
-  title: string
 }
 
-export function DeleteButton({ slug, title }: DeleteButtonProps) {
+export function DeleteButton({ slug }: DeleteButtonProps) {
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()

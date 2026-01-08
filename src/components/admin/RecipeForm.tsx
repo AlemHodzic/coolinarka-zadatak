@@ -118,10 +118,7 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
     setError('')
     setLoading(true)
 
-    // Parse tags
     const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean)
-
-    // Filter empty ingredients and steps
     const ingredients = formData.ingredients.filter(i => i.name.trim())
     const steps = formData.steps.filter(s => s.instruction.trim())
 
@@ -160,7 +157,6 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
         router.push('/admin/recepti')
         router.refresh()
       } else {
-        // Build detailed error message
         let errorMessage = data.error || 'Greška pri spremanju recepta'
         if (data.details?.fieldErrors) {
           const fieldErrors = Object.entries(data.details.fieldErrors)
@@ -171,7 +167,6 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
           }
         }
         setError(errorMessage)
-        // Scroll to top to show error
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (err) {
@@ -242,7 +237,7 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
               placeholder="recepti/naziv-recepta/hero"
             />
             <p className="text-sm text-warm-500 mt-1">
-              Ostavite "recepti/default" za placeholder sliku
+              Ostavite &quot;recepti/default&quot; za placeholder sliku
             </p>
           </div>
 

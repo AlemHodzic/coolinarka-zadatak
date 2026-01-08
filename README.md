@@ -2,7 +2,7 @@
 
 A production-ready recipe application built with Next.js 14, demonstrating modern full-stack development practices, SEO optimization, and clean architecture.
 
-**Live Demo**: [Your Vercel URL here]
+**Live Demo**: https://coolinarka-zadatak.vercel.app
 
 ---
 
@@ -435,8 +435,10 @@ getImageUrl(imageId, { width: 1200, height: 800 })
 1. Push code to GitHub
 2. Connect repository to Vercel
 3. Add environment variables:
-   - `DATABASE_URL` - PostgreSQL connection string (use Vercel Postgres or Neon)
-   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name
+   - `DATABASE_URL` - PostgreSQL connection string (use Vercel Postgres)
+   - `AUTH_SECRET` - Generate with `openssl rand -base64 32`
+   - `ADMIN_USERNAME` and `ADMIN_PASSWORD` (optional, defaults: admin/admin123)
+   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name (optional)
 4. Deploy!
 
 ---

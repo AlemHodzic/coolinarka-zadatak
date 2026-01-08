@@ -6,7 +6,6 @@ interface ImageOptions {
   crop?: 'fill' | 'fit' | 'scale' | 'thumb'
 }
 
-// Placeholder images from Unsplash for each recipe (when Cloudinary is not configured)
 const PLACEHOLDER_IMAGES: Record<string, string> = {
   'recepti/sarma': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80',
   'recepti/cevapi': 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80',
@@ -21,7 +20,6 @@ const PLACEHOLDER_IMAGES: Record<string, string> = {
 const DEFAULT_PLACEHOLDER = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&q=80'
 
 export function getImageUrl(imageId: string, options: ImageOptions): string {
-  // If Cloudinary is not configured, use placeholder images
   if (!CLOUD_NAME) {
     return PLACEHOLDER_IMAGES[imageId] || DEFAULT_PLACEHOLDER
   }
