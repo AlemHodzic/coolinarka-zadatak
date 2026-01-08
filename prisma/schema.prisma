@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Recipe {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  title       String
+  lead        String
+  imageId     String      // Cloudinary public ID
+  prepTime    Int         // Minutes
+  servings    Int
+  difficulty  Difficulty
+  mealGroup   MealGroup
+  prepMethod  PrepMethod
+  tags        String[]
+  ingredients Json        // Array of {name, quantity, unit}
+  steps       Json        // Array of {order, instruction}
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum MealGroup {
+  MAIN_DISH
+  DESSERT
+  BREAD
+  APPETIZER
+  SOUP
+  SALAD
+  DRINK
+}
+
+enum PrepMethod {
+  BAKING
+  COOKING
+  FRYING
+  GRILLING
+  RAW
+  STEAMING
+}

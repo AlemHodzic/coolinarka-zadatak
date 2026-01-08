@@ -1,36 +1,375 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍳 Coolinarika Recepti
 
-## Getting Started
+A production-ready recipe application built with Next.js 14, demonstrating modern full-stack development practices, SEO optimization, and clean architecture.
 
-First, run the development server:
+**Live Demo**: [Your Vercel URL here]
+
+---
+
+## 📋 Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [API Documentation](#api-documentation)
+- [CDN Strategy](#cdn-strategy)
+- [Design Decisions](#design-decisions)
+
+---
+
+## ✨ Features
+
+- **Recipe List View** (`/recepti`) - Browse all recipes with filtering by difficulty, meal group
+- **Recipe Detail View** (`/recepti/[slug]`) - Full recipe with ingredients, steps, and metadata
+- **Full CRUD API** - Create, read, update, delete recipes via REST API
+- **Real CDN Integration** - Cloudinary for optimized image delivery with on-the-fly transformations
+- **SEO Optimized** - Dynamic metadata, Open Graph tags, JSON-LD structured data
+- **Server-Side Rendering** - Fast initial loads and SEO-friendly content
+- **Incremental Static Regeneration** - Static pages that update automatically
+- **Responsive Design** - Beautiful UI inspired by Coolinarika, works on all devices
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology | Why |
+|-------|------------|-----|
+| **Framework** | Next.js 14 (App Router) | SSR/SSG for SEO, API routes for backend, best DX |
+| **Database** | PostgreSQL + Prisma | Type-safe queries, migrations, excellent tooling |
+| **Styling** | Tailwind CSS | Utility-first, rapid development, consistent design |
+| **Validation** | Zod | Runtime type validation with great TypeScript integration |
+| **CDN** | Cloudinary | Real image CDN with transformations, free tier |
+| **Language** | TypeScript | End-to-end type safety |
+| **Deployment** | Vercel | Native Next.js support, edge functions, global CDN |
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Client Browser                           │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Next.js Application                         │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                     App Router (SSR/SSG)                    ││
+│  │  • /recepti           → Server Component (SSR)              ││
+│  │  • /recepti/[slug]    → Static + ISR (revalidate: 3600)     ││
+│  └─────────────────────────────────────────────────────────────┘│
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                    API Route Handlers                        ││
+│  │  • GET    /api/recipes       → List all recipes              ││
+│  │  • POST   /api/recipes       → Create recipe                 ││
+│  │  • GET    /api/recipes/:slug → Get single recipe             ││
+│  │  • PUT    /api/recipes/:slug → Update recipe                 ││
+│  │  • DELETE /api/recipes/:slug → Delete recipe                 ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+                │                                    │
+                ▼                                    ▼
+┌───────────────────────────┐        ┌─────────────────────────────┐
+│      PostgreSQL DB        │        │      Cloudinary CDN         │
+│  • Recipe data            │        │  • Image storage            │
+│  • Prisma ORM             │        │  • On-the-fly transforms    │
+│  • Type-safe queries      │        │  • Global edge delivery     │
+└───────────────────────────┘        └─────────────────────────────┘
+```
+
+### Server vs Client Separation
+
+| Responsibility | Location | Examples |
+|----------------|----------|----------|
+| Data fetching | Server | `prisma.recipe.findMany()` in page components |
+| SEO metadata | Server | `generateMetadata()` function |
+| Initial render | Server | All page components are Server Components by default |
+| Image optimization | CDN | Cloudinary with `f_auto,q_auto` transforms |
+| Interactive UI | Client | Form handling, animations (marked with `'use client'`) |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database (local or cloud)
+- Cloudinary account (free tier works)
+
+### 1. Clone and Install
+
+```bash
+git clone <repository-url>
+cd zadatak
+npm install
+```
+
+### 2. Environment Setup
+
+Create a `.env` file:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/coolinarika?schema=public"
+
+# Cloudinary (get from cloudinary.com dashboard)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+```
+
+### 3. Database Setup
+
+```bash
+# Push schema to database
+npm run db:push
+
+# Seed with sample recipes
+npm run db:seed
+```
+
+### 4. Upload Images to Cloudinary
+
+Upload images to your Cloudinary account under the `recepti/` folder with these names:
+- `recepti/sarma`
+- `recepti/cevapi`
+- `recepti/burek`
+- `recepti/palacinke`
+- `recepti/cokoladna-torta`
+- `recepti/bosanski-lonac`
+- `recepti/juha-od-rajcice`
+- `recepti/shopska-salata`
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Project Structure
 
-## Learn More
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── recipes/
+│   │       ├── route.ts          # GET all, POST
+│   │       └── [slug]/
+│   │           └── route.ts      # GET one, PUT, DELETE
+│   ├── recepti/
+│   │   ├── page.tsx              # Recipe list (SSR)
+│   │   ├── loading.tsx           # Loading skeleton
+│   │   └── [slug]/
+│   │       ├── page.tsx          # Recipe detail (SSG + ISR)
+│   │       └── loading.tsx       # Loading skeleton
+│   ├── layout.tsx                # Root layout with header/footer
+│   ├── globals.css               # Global styles + Tailwind
+│   └── not-found.tsx             # 404 page
+├── components/
+│   ├── ui/
+│   │   └── Badge.tsx             # Reusable badge components
+│   └── recipes/
+│       └── RecipeCard.tsx        # Recipe card for list view
+├── lib/
+│   ├── db.ts                     # Prisma client singleton
+│   ├── cloudinary.ts             # CDN URL builder
+│   ├── validation.ts             # Zod schemas
+│   └── slug.ts                   # Slug generation
+└── types/
+    └── recipe.ts                 # TypeScript interfaces
 
-To learn more about Next.js, take a look at the following resources:
+prisma/
+├── schema.prisma                 # Database schema
+└── seed.ts                       # Seed data script
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📡 API Documentation
 
-## Deploy on Vercel
+### List Recipes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```http
+GET /api/recipes
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Response: `200 OK`
+```json
+[
+  {
+    "id": "clx...",
+    "slug": "sarma",
+    "title": "Sarma",
+    "lead": "Tradicionalna sarma...",
+    "imageId": "recepti/sarma",
+    "prepTime": 180,
+    "servings": 8,
+    "difficulty": "HARD",
+    "mealGroup": "MAIN_DISH",
+    "prepMethod": "COOKING",
+    "tags": ["tradicionalno", "zimsko"],
+    "ingredients": [...],
+    "steps": [...],
+    "createdAt": "2024-...",
+    "updatedAt": "2024-..."
+  }
+]
+```
+
+### Get Single Recipe
+
+```http
+GET /api/recipes/:slug
+```
+
+### Create Recipe
+
+```http
+POST /api/recipes
+Content-Type: application/json
+
+{
+  "title": "Novi Recept",
+  "lead": "Kratki opis...",
+  "imageId": "recepti/novi-recept",
+  "prepTime": 30,
+  "servings": 4,
+  "difficulty": "EASY",
+  "mealGroup": "MAIN_DISH",
+  "prepMethod": "COOKING",
+  "tags": ["brzo", "jednostavno"],
+  "ingredients": [
+    { "name": "Sastojak", "quantity": "100", "unit": "g" }
+  ],
+  "steps": [
+    { "order": 1, "instruction": "Prvi korak..." }
+  ]
+}
+```
+
+### Update Recipe
+
+```http
+PUT /api/recipes/:slug
+Content-Type: application/json
+
+{
+  "title": "Ažurirani naziv"
+}
+```
+
+### Delete Recipe
+
+```http
+DELETE /api/recipes/:slug
+```
+
+### Error Responses
+
+| Status | Meaning |
+|--------|---------|
+| `400` | Invalid input data |
+| `404` | Recipe not found |
+| `500` | Server error |
+
+---
+
+## 🖼 CDN Strategy
+
+Instead of simulating a CDN, this project uses **Cloudinary** - a real production CDN:
+
+### How It Works
+
+1. **Database stores only the image ID**: `imageId: "recepti/sarma"`
+2. **URLs are built dynamically** with transformation parameters
+3. **Same source, multiple sizes**: Thumbnail (400x300) and Hero (1200x800) from one upload
+
+### URL Builder (`lib/cloudinary.ts`)
+
+```typescript
+// Thumbnail for list page
+getImageUrl(imageId, { width: 400, height: 300 })
+// → https://res.cloudinary.com/CLOUD/image/upload/w_400,h_300,c_fill,f_auto,q_auto/recepti/sarma
+
+// Hero for detail page
+getImageUrl(imageId, { width: 1200, height: 800 })
+// → https://res.cloudinary.com/CLOUD/image/upload/w_1200,h_800,c_fill,f_auto,q_auto/recepti/sarma
+```
+
+### CDN Features Demonstrated
+
+- **Real edge caching** - Images served from nearest global location
+- **Automatic format optimization** - `f_auto` serves WebP/AVIF based on browser
+- **Automatic quality optimization** - `q_auto` balances quality vs size
+- **On-the-fly transformations** - Resize, crop without pre-generating variants
+
+---
+
+## 🎨 Design Decisions
+
+### Why Next.js App Router (not Pages Router)?
+
+- Server Components reduce client-side JavaScript
+- Better streaming and suspense support
+- Improved data fetching patterns with `async` components
+- Native metadata API for SEO
+
+### Why Prisma over raw SQL?
+
+- Type-safe database queries
+- Auto-generated TypeScript types from schema
+- Easy migrations and schema management
+- Great developer experience with Prisma Studio
+
+### Why Zod for validation?
+
+- Runtime validation that TypeScript can't provide
+- Excellent error messages
+- Schema inference for types (DRY)
+- Works seamlessly with forms and APIs
+
+### Why Cloudinary over fake CDN?
+
+- Shows real-world production knowledge
+- Demonstrates understanding of CDN concepts (edge caching, transformations)
+- Free tier is sufficient for demo
+- More impressive than simulated cache headers
+
+---
+
+## 📝 Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run db:push` | Push Prisma schema to database |
+| `npm run db:seed` | Seed database with sample recipes |
+| `npm run db:studio` | Open Prisma Studio |
+
+---
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
+
+1. Push code to GitHub
+2. Connect repository to Vercel
+3. Add environment variables:
+   - `DATABASE_URL` - PostgreSQL connection string (use Vercel Postgres or Neon)
+   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name
+4. Deploy!
+
+---
+
+## 📄 License
+
+MIT
