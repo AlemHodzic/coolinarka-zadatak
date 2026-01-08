@@ -5,9 +5,8 @@ generator client {
 // For production (Vercel), use PostgreSQL
 // For local development, you can temporarily switch to "sqlite" with url = "file:./dev.db"
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Recipe {
