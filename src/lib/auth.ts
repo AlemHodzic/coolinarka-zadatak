@@ -5,7 +5,8 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  secret: process.env.AUTH_SECRET,
+  // Default secret for local development - MUST be set in production via AUTH_SECRET env var
+  secret: process.env.AUTH_SECRET || 'default-secret-do-not-use-in-production-12345',
   trustHost: true,
   session: {
     strategy: 'jwt'
