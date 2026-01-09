@@ -2,9 +2,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Database configuration:
-// - LOCAL: Uses SQLite (file:./dev.db) - zero config!
-// - VERCEL: Uses PostgreSQL (POSTGRES_PRISMA_URL) - auto-configured
+// PostgreSQL for Vercel deployment
+// For local dev with SQLite, run: npm run setup:local
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")

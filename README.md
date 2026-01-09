@@ -129,6 +129,8 @@ Open [http://localhost:3000](http://localhost:3000) - you should see 8 recipes!
 - Creates the database tables
 - Seeds 8 sample recipes with images
 
+> **Note:** The build script automatically switches to PostgreSQL for Vercel deployments. You don't need to manually change the schema before committing.
+
 ---
 
 ### Vercel Deployment (PostgreSQL)
