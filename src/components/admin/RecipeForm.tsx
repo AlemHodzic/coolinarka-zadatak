@@ -37,7 +37,7 @@ interface RecipeFormProps {
 const defaultFormData: RecipeFormData = {
   title: '',
   lead: '',
-  imageId: 'recepti/default',
+  imageId: '/recipes/default/hero.jpg',
   prepTime: 30,
   servings: 4,
   difficulty: 'MEDIUM',
@@ -227,17 +227,17 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-warm-700 mb-2">
-              ID slike (Cloudinary)
+              Putanja slike (CDN)
             </label>
             <input
               type="text"
               value={formData.imageId}
               onChange={(e) => updateField('imageId', e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-warm-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all"
-              placeholder="recepti/naziv-recepta/hero"
+              placeholder="/recipes/naziv-recepta/hero.jpg"
             />
             <p className="text-sm text-warm-500 mt-1">
-              Ostavite &quot;recepti/default&quot; za placeholder sliku
+              Format: /recipes/slug/hero.jpg (npr. /recipes/sarma/hero.jpg)
             </p>
           </div>
 

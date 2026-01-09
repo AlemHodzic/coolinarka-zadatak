@@ -28,7 +28,7 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
   - Create, edit, and delete recipes via intuitive forms
   - Middleware-protected routes
 - **Full CRUD API** - Create, read, update, delete recipes via REST API
-- **Real CDN Integration** - Cloudinary for optimized image delivery with on-the-fly transformations
+- **CDN Simulation** - Fake CDN route with proper Cache-Control headers, demonstrating CDN concepts
 - **SEO Optimized** - Dynamic metadata, Open Graph tags, JSON-LD structured data
 - **Server-Side Rendering** - Fast initial loads and SEO-friendly content
 - **Incremental Static Regeneration** - Static pages that update automatically
@@ -46,7 +46,7 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 | **Auth** | NextAuth.js v5 | Industry standard, JWT sessions, middleware protection |
 | **Styling** | Tailwind CSS | Utility-first, rapid development, consistent design |
 | **Validation** | Zod | Runtime type validation with great TypeScript integration |
-| **Images** | Cloudinary / Unsplash fallback | Real CDN in prod, placeholder images for local dev |
+| **Images** | Fake CDN Route | Static files with Cache-Control headers, `CDN_BASE_URL` env |
 | **Language** | TypeScript | End-to-end type safety |
 | **Deployment** | Vercel | Native Next.js support, edge functions, global CDN |
 
@@ -86,10 +86,10 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
                 │                                    │
                 ▼                                    ▼
 ┌───────────────────────────┐        ┌─────────────────────────────┐
-│      PostgreSQL DB        │        │      Cloudinary CDN         │
-│  • Recipe data            │        │  • Image storage            │
-│  • Prisma ORM             │        │  • On-the-fly transforms    │
-│  • Type-safe queries      │        │  • Global edge delivery     │
+│      PostgreSQL DB        │        │       CDN (Simulated)       │
+│  • Recipe data            │        │  • /api/cdn/* route         │
+│  • Prisma ORM             │        │  • Cache-Control headers    │
+│  • Type-safe queries      │        │  • CDN_BASE_URL env var     │
 └───────────────────────────┘        └─────────────────────────────┘
 ```
 
@@ -100,7 +100,7 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 | Data fetching | Server | `prisma.recipe.findMany()` in page components |
 | SEO metadata | Server | `generateMetadata()` function |
 | Initial render | Server | All page components are Server Components by default |
-| Image optimization | CDN | Cloudinary with `f_auto,q_auto` transforms |
+| Image optimization | CDN | Simulated CDN with Cache-Control headers |
 | Interactive UI | Client | Form handling, animations (marked with `'use client'`) |
 
 ---
@@ -167,15 +167,6 @@ Push your changes. The build will automatically:
 
 ---
 
-### Optional: Cloudinary CDN (Custom Images)
-
-1. Create a free account at [cloudinary.com](https://cloudinary.com)
-2. Add to `.env`:
-   ```env
-   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
-   ```
-3. Upload images to `recepti/` folder with names: `sarma`, `cevapi`, `burek`, etc.
-
 ### Troubleshooting
 
 | Problem | Solution |
@@ -193,6 +184,8 @@ src/
 ├── app/
 │   ├── api/
 │   │   ├── auth/[...nextauth]/   # NextAuth.js route handlers
+│   │   ├── cdn/[...path]/        # Fake CDN with Cache-Control headers
+│   │   │   └── route.ts
 │   │   └── recipes/
 │   │       ├── route.ts          # GET all, POST
 │   │       └── [slug]/
@@ -227,7 +220,7 @@ src/
 ├── lib/
 │   ├── auth.ts                   # NextAuth.js configuration
 │   ├── db.ts                     # Prisma client singleton
-│   ├── cloudinary.ts             # CDN URL builder
+│   ├── cdn.ts                    # CDN URL builder (uses CDN_BASE_URL)
 │   ├── validation.ts             # Zod schemas
 │   └── slug.ts                   # Slug generation
 ├── middleware.ts                 # Auth middleware for /admin/*
@@ -299,7 +292,7 @@ Response: `200 OK`
     "slug": "sarma",
     "title": "Sarma",
     "lead": "Tradicionalna sarma...",
-    "imageId": "recepti/sarma",
+    "imageId": "/recipes/sarma/hero.jpg",
     "prepTime": 180,
     "servings": 8,
     "difficulty": "HARD",
@@ -329,7 +322,7 @@ Content-Type: application/json
 {
   "title": "Novi Recept",
   "lead": "Kratki opis...",
-  "imageId": "recepti/novi-recept",
+  "imageId": "/recipes/novi-recept/hero.jpg",
   "prepTime": 30,
   "servings": 4,
   "difficulty": "EASY",
@@ -378,32 +371,73 @@ DELETE /api/recipes/:slug
 
 ## 🖼 CDN Strategy
 
-Instead of simulating a CDN, this project uses **Cloudinary** - a real production CDN:
+This project implements a **simulated CDN** as requested in the task specification.
 
 ### How It Works
 
-1. **Database stores only the image ID**: `imageId: "recepti/sarma"`
-2. **URLs are built dynamically** with transformation parameters
-3. **Same source, multiple sizes**: Thumbnail (400x300) and Hero (1200x800) from one upload
+1. **Database stores only the path**: `imageId: "/recipes/sarma/hero.jpg"`
+2. **`CDN_BASE_URL` env variable**: Can point to fake CDN (`/api/cdn`) or real CDN (`https://cdn.example.com`)
+3. **URLs are built dynamically**: `${CDN_BASE_URL}${imageId}`
 
-### URL Builder (`lib/cloudinary.ts`)
+### File Structure
+
+```
+public/cdn/
+└── recipes/
+    ├── sarma/
+    │   └── hero.jpg
+    ├── cevapi/
+    │   └── hero.jpg
+    ├── burek/
+    │   └── hero.jpg
+    └── ... (more recipes)
+```
+
+### Fake CDN Route (`/api/cdn/[...path]`)
+
+The route handler serves static files with proper CDN cache headers:
 
 ```typescript
-// Thumbnail for list page
-getImageUrl(imageId, { width: 400, height: 300 })
-// → https://res.cloudinary.com/CLOUD/image/upload/w_400,h_300,c_fill,f_auto,q_auto/recepti/sarma
+// Response headers demonstrating CDN concepts:
+{
+  'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
+  'ETag': '"abc123..."',
+  'Vary': 'Accept-Encoding',
+  'X-CDN-Cache': 'SIMULATED'
+}
+```
 
-// Hero for detail page
-getImageUrl(imageId, { width: 1200, height: 800 })
-// → https://res.cloudinary.com/CLOUD/image/upload/w_1200,h_800,c_fill,f_auto,q_auto/recepti/sarma
+### URL Builder (`lib/cdn.ts`)
+
+```typescript
+// Environment variable
+CDN_BASE_URL = '/api/cdn'  // local
+CDN_BASE_URL = 'https://cdn.example.com'  // production
+
+// Usage
+getCdnUrl('/recipes/sarma/hero.jpg')
+// → /api/cdn/recipes/sarma/hero.jpg (local)
+// → https://cdn.example.com/recipes/sarma/hero.jpg (prod)
 ```
 
 ### CDN Features Demonstrated
 
-- **Real edge caching** - Images served from nearest global location
-- **Automatic format optimization** - `f_auto` serves WebP/AVIF based on browser
-- **Automatic quality optimization** - `q_auto` balances quality vs size
-- **On-the-fly transformations** - Resize, crop without pre-generating variants
+| Feature | Implementation |
+|---------|----------------|
+| **Path-based storage** | DB stores `/recipes/slug/hero.jpg`, not full URL |
+| **Base URL config** | `CDN_BASE_URL` env var for easy switching |
+| **Cache-Control** | `max-age=31536000` (1 year), `s-maxage`, `immutable` |
+| **ETag** | For cache validation |
+| **Content-Type** | Proper MIME types for images |
+| **Security** | Directory traversal prevention |
+
+### Switching to Production CDN
+
+To use a real CDN (e.g., Cloudflare, CloudFront), simply:
+
+1. Upload `public/cdn/` contents to your CDN
+2. Set `NEXT_PUBLIC_CDN_BASE_URL=https://cdn.yoursite.com`
+3. All images will be served from the real CDN
 
 ---
 
@@ -430,12 +464,12 @@ getImageUrl(imageId, { width: 1200, height: 800 })
 - Schema inference for types (DRY)
 - Works seamlessly with forms and APIs
 
-### Why Cloudinary over fake CDN?
+### Why Fake CDN (as specified in task)?
 
-- Shows real-world production knowledge
-- Demonstrates understanding of CDN concepts (edge caching, transformations)
-- Free tier is sufficient for demo
-- More impressive than simulated cache headers
+- **Follows task requirements** - Task specifically asked for CDN simulation
+- **Demonstrates understanding** - Shows knowledge of Cache-Control, ETag, CDN concepts
+- **Easy to switch** - `CDN_BASE_URL` makes switching to real CDN trivial
+- **Self-contained** - No external service dependencies for demo
 
 ---
 
@@ -464,7 +498,7 @@ getImageUrl(imageId, { width: 1200, height: 800 })
 4. Add environment variables:
    - `AUTH_SECRET` - Generate with `openssl rand -base64 32`
    - `ADMIN_USERNAME` and `ADMIN_PASSWORD` (optional, defaults: admin/admin123)
-   - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name (optional)
+   - `NEXT_PUBLIC_CDN_BASE_URL` - CDN URL (optional, defaults to `/api/cdn`)
    - Note: `POSTGRES_URL` is auto-set by Prisma Postgres
 5. Deploy!
 

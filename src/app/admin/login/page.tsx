@@ -123,6 +123,18 @@ export default function LoginPage() {
             Demo: admin / admin123
           </p>
         </form>
+
+        <div className="text-center mt-6">
+          <a 
+            href="/recepti" 
+            className="inline-flex items-center gap-2 text-warm-600 hover:text-primary-600 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Natrag na recepte
+          </a>
+        </div>
       </div>
     </div>
   )

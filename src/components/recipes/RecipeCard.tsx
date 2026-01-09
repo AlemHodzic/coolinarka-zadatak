@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Recipe } from '@/types/recipe'
-import { getThumbnailUrl } from '@/lib/cloudinary'
+import { getThumbnailUrl } from '@/lib/cdn'
 import { DifficultyBadge, MealGroupBadge } from '@/components/ui/Badge'
 
 interface RecipeCardProps {

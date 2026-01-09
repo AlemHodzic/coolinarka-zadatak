@@ -25,7 +25,7 @@ export default function ReceptiLayout({
               </Link>
               <Link 
                 href="/admin" 
-                className="text-warm-500 hover:text-warm-700 text-sm transition-colors"
+                className="text-warm-500 hover:text-warm-700 font-medium transition-colors"
               >
                 Admin
               </Link>

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
-import { getHeroUrl, getOgImageUrl } from '@/lib/cloudinary'
+import { getHeroUrl, getOgImageUrl } from '@/lib/cdn'
 import { DifficultyBadge, MealGroupBadge, Badge } from '@/components/ui/Badge'
 import { Recipe, prepMethodLabels, parseRecipeFromDb } from '@/types/recipe'
 
