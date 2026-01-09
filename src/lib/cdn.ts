@@ -10,8 +10,10 @@
  * and the full URL is constructed at runtime.
  */
 
-// CDN base URL from environment, defaults to local fake CDN
-const CDN_BASE_URL = process.env.NEXT_PUBLIC_CDN_BASE_URL || '/api/cdn'
+// CDN base URL from environment
+// Defaults to /cdn which serves static files from /public/cdn/
+// The /api/cdn route is kept for demonstration of cache headers (works locally)
+const CDN_BASE_URL = process.env.NEXT_PUBLIC_CDN_BASE_URL || '/cdn'
 
 /**
  * Build full CDN URL from a path
