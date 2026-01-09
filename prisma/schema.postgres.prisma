@@ -2,11 +2,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// SQLite configuration for LOCAL development only
-// Use: npm run dev:local
+// Database configuration:
+// - LOCAL: Uses SQLite (file:./dev.db) - zero config!
+// - VERCEL: Uses PostgreSQL (POSTGRES_PRISMA_URL) - auto-configured
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Recipe {
@@ -26,4 +28,3 @@ model Recipe {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
-

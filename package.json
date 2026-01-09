@@ -4,11 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push && next build",
+    "build": "prisma generate && prisma db push && npx tsx prisma/seed.ts && next build",
     "start": "next start",
     "lint": "next lint",
-    "setup": "npx tsx scripts/setup.ts",
-    "setup:local": "npx tsx scripts/setup-local.ts",
+    "setup:local": "npx tsx scripts/use-sqlite.ts",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",

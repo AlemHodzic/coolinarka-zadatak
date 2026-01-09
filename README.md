@@ -107,46 +107,67 @@ A production-ready recipe application built with Next.js 14, demonstrating moder
 
 ## 🚀 Getting Started
 
-### Quick Start (Zero Config!)
+### Local Development (SQLite - Zero Config!)
 
-The app works out of the box with **no external services required**. Just run:
+The app works locally with **no external services required**:
 
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Set up database and seed data (automatic!)
+# 2. Set up SQLite database and seed data
 npm run setup:local
 
 # 3. Start the app
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) - you should see 8 recipes with images!
+Open [http://localhost:3000](http://localhost:3000) - you should see 8 recipes!
 
-**That's it!** The app uses:
-- **SQLite** - File-based database, no setup needed
-- **Placeholder images** - Beautiful Unsplash images, no Cloudinary needed
+**What `setup:local` does:**
+- Switches Prisma to use SQLite (`prisma/dev.db`)
+- Creates the database tables
+- Seeds 8 sample recipes with images
 
 ---
 
-### Production Setup (Optional)
+### Vercel Deployment (PostgreSQL)
 
-For production deployment, you can optionally configure:
+For production, the app uses **Vercel Postgres**:
 
-#### PostgreSQL Database
+#### 1. Add Vercel Postgres Database
 
-1. Create a database on [Neon](https://neon.tech) (free) or [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
-2. Update `prisma/schema.prisma`:
-   ```prisma
-   datasource db {
-     provider = "postgresql"  // Change from "sqlite"
-     url      = env("DATABASE_URL")
-   }
-   ```
-3. Update `.env` with your PostgreSQL connection string
+1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
+2. Select your project → **Storage** tab → **Create Database** → **Postgres**
+3. Click **Connect** to link it to your project
+4. Vercel automatically adds these environment variables:
+   - `POSTGRES_PRISMA_URL`
+   - `POSTGRES_URL_NON_POOLING`
 
-#### Cloudinary CDN (Custom Images)
+#### 2. Set Environment Variables
+
+In Vercel project settings → **Environment Variables**, add:
+
+```env
+DATABASE_URL=${POSTGRES_PRISMA_URL}
+DIRECT_URL=${POSTGRES_URL_NON_POOLING}
+AUTH_SECRET=your-random-32-char-string
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+> **Important:** You need to set `DATABASE_URL` and `DIRECT_URL` to reference the Postgres URLs that Vercel creates.
+
+#### 3. Deploy
+
+Push your changes. The build will automatically:
+- Run `prisma db push` to create tables
+- Run `prisma/seed.ts` to add sample recipes
+- Build the Next.js app
+
+---
+
+### Optional: Cloudinary CDN (Custom Images)
 
 1. Create a free account at [cloudinary.com](https://cloudinary.com)
 2. Add to `.env`:
@@ -423,7 +444,8 @@ getImageUrl(imageId, { width: 1200, height: 800 })
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start development server |
-| `npm run build` | Build for production |
+| `npm run setup:local` | **Switch to SQLite + seed database** (for local dev) |
+| `npm run build` | Build for production (uses PostgreSQL) |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm run db:push` | Push Prisma schema to database |
@@ -438,12 +460,14 @@ getImageUrl(imageId, { width: 1200, height: 800 })
 
 1. Push code to GitHub
 2. Connect repository to Vercel
-3. Add environment variables:
-   - `DATABASE_URL` - PostgreSQL connection string (use Vercel Postgres)
+3. Add **Vercel Postgres** database (Storage → Create Database → Postgres)
+4. Add environment variables:
+   - `DATABASE_URL` = `${POSTGRES_PRISMA_URL}` (reference Vercel's var)
+   - `DIRECT_URL` = `${POSTGRES_URL_NON_POOLING}` (reference Vercel's var)
    - `AUTH_SECRET` - Generate with `openssl rand -base64 32`
    - `ADMIN_USERNAME` and `ADMIN_PASSWORD` (optional, defaults: admin/admin123)
    - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name (optional)
-4. Deploy!
+5. Deploy!
 
 ---
 

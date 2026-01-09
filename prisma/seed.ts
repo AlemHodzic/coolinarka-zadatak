@@ -248,6 +248,13 @@ const recipes = [
 ]
 
 async function main() {
+  // Check if database already has recipes (skip seeding on subsequent builds)
+  const existingCount = await prisma.recipe.count()
+  if (existingCount > 0) {
+    console.log(`✅ Database already has ${existingCount} recipes. Skipping seed.`)
+    return
+  }
+
   console.log('🌱 Seeding database...')
   
   for (const recipe of recipes) {
