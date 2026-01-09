@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 
@@ -7,6 +8,13 @@ const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-display",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hr" suppressHydrationWarning>
-      <body className={`${geistSans.variable} antialiased min-h-screen`} suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${playfair.variable} antialiased min-h-screen`} suppressHydrationWarning>
         <SessionProvider>
           {children}
         </SessionProvider>

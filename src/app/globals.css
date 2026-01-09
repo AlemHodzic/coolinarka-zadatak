@@ -2,12 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
-
 :root {
   --background: #fdfaf5;
   --foreground: #2d2a26;
-  --font-display: 'Playfair Display', Georgia, serif;
 }
 
 body {

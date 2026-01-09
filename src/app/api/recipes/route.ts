@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { recipeCreateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
 import { parseRecipeFromDb } from '@/types/recipe'
@@ -10,7 +12,11 @@ export async function GET() {
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(recipes.map(parseRecipeFromDb))
+    return NextResponse.json(recipes.map(parseRecipeFromDb), {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    })
   } catch (error) {
     console.error('Failed to fetch recipes:', error)
     return NextResponse.json(
@@ -21,6 +27,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Check authentication - only logged-in users can create recipes
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Neautorizirano - morate biti prijavljeni' },
+      { status: 401 }
+    )
+  }
+
   try {
     const body = await request.json()
     const parsedBody = {
@@ -67,6 +82,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(parseRecipeFromDb(recipe), { status: 201 })
   } catch (error) {
     console.error('Failed to create recipe:', error)
+    
+    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Recept s ovim nazivom već postoji' },
+        { status: 409 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Greška pri kreiranju recepta' },
       { status: 500 }

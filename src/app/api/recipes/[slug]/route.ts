@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { recipeUpdateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
 import { parseRecipeFromDb } from '@/types/recipe'
@@ -23,7 +25,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    return NextResponse.json(parseRecipeFromDb(recipe))
+    return NextResponse.json(parseRecipeFromDb(recipe), {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    })
   } catch (error) {
     console.error('Failed to fetch recipe:', error)
     return NextResponse.json(
@@ -34,6 +40,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  // Check authentication - only logged-in users can update recipes
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Neautorizirano - morate biti prijavljeni' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { slug } = await params
     const body = await request.json()
@@ -99,6 +114,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(parseRecipeFromDb(recipe))
   } catch (error) {
     console.error('Failed to update recipe:', error)
+    
+    // Handle unique constraint violation (slug conflict)
+    if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Recept s ovim nazivom već postoji' },
+        { status: 409 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Greška pri ažuriranju recepta' },
       { status: 500 }
@@ -107,6 +131,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  // Check authentication - only logged-in users can delete recipes
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json(
+      { error: 'Neautorizirano - morate biti prijavljeni' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { slug } = await params
 

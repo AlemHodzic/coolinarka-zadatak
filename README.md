@@ -346,8 +346,12 @@ DELETE /api/recipes/:slug
 | Status | Meaning |
 |--------|---------|
 | `400` | Invalid input data |
+| `401` | Unauthorized (authentication required for POST/PUT/DELETE) |
 | `404` | Recipe not found |
+| `409` | Conflict (e.g., slug already exists) |
 | `500` | Server error |
+
+> **Note:** The `POST`, `PUT`, and `DELETE` endpoints require authentication. You must be logged in via the admin panel (`/admin/login`) to modify recipes.
 
 ---
 
