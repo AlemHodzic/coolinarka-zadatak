@@ -457,20 +457,6 @@ To use a real CDN (e.g., Cloudflare, CloudFront), simply:
 - Easy migrations and schema management
 - Great developer experience with Prisma Studio
 
-### Why Zod for validation?
-
-- Runtime validation that TypeScript can't provide
-- Excellent error messages
-- Schema inference for types (DRY)
-- Works seamlessly with forms and APIs
-
-### Why Fake CDN (as specified in task)?
-
-- **Follows task requirements** - Task specifically asked for CDN simulation
-- **Demonstrates understanding** - Shows knowledge of Cache-Control, ETag, CDN concepts
-- **Easy to switch** - `CDN_BASE_URL` makes switching to real CDN trivial
-- **Self-contained** - No external service dependencies for demo
-
 ---
 
 ## 📝 Scripts
