@@ -248,14 +248,14 @@ const recipes = [
 ]
 
 async function main() {
-  // Check if database already has recipes (skip seeding on subsequent builds)
+  console.log('🌱 Seeding database...')
+  
+  // Delete existing recipes to ensure fresh data with correct imageId paths
   const existingCount = await prisma.recipe.count()
   if (existingCount > 0) {
-    console.log(`✅ Database already has ${existingCount} recipes. Skipping seed.`)
-    return
+    console.log(`  🗑️ Clearing ${existingCount} existing recipes...`)
+    await prisma.recipe.deleteMany()
   }
-
-  console.log('🌱 Seeding database...')
   
   for (const recipe of recipes) {
     await prisma.recipe.upsert({
