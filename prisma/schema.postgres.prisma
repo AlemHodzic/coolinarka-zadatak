@@ -2,12 +2,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// PostgreSQL for Vercel deployment
+// Prisma Postgres for Vercel deployment
 // For local dev with SQLite, run: npm run setup:local
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url       = env("POSTGRES_URL")
+  directUrl = env("POSTGRES_URL")
 }
 
 model Recipe {

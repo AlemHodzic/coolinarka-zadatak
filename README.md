@@ -151,14 +151,12 @@ For production, the app uses **Vercel Postgres**:
 In Vercel project settings → **Environment Variables**, add:
 
 ```env
-DATABASE_URL=${POSTGRES_PRISMA_URL}
-DIRECT_URL=${POSTGRES_URL_NON_POOLING}
 AUTH_SECRET=your-random-32-char-string
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ```
 
-> **Important:** You need to set `DATABASE_URL` and `DIRECT_URL` to reference the Postgres URLs that Vercel creates.
+> **Note:** If using Prisma Postgres, the `POSTGRES_URL` variable is automatically set when you connect the database.
 
 #### 3. Deploy
 
@@ -462,13 +460,12 @@ getImageUrl(imageId, { width: 1200, height: 800 })
 
 1. Push code to GitHub
 2. Connect repository to Vercel
-3. Add **Vercel Postgres** database (Storage → Create Database → Postgres)
+3. Add **Prisma Postgres** database (Storage → Create Database → Prisma Postgres)
 4. Add environment variables:
-   - `DATABASE_URL` = `${POSTGRES_PRISMA_URL}` (reference Vercel's var)
-   - `DIRECT_URL` = `${POSTGRES_URL_NON_POOLING}` (reference Vercel's var)
    - `AUTH_SECRET` - Generate with `openssl rand -base64 32`
    - `ADMIN_USERNAME` and `ADMIN_PASSWORD` (optional, defaults: admin/admin123)
    - `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` - Your Cloudinary cloud name (optional)
+   - Note: `POSTGRES_URL` is auto-set by Prisma Postgres
 5. Deploy!
 
 ---
