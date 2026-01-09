@@ -116,7 +116,7 @@ The app works out of the box with **no external services required**. Just run:
 npm install
 
 # 2. Set up database and seed data (automatic!)
-npm run setup
+npm run setup:local
 
 # 3. Start the app
 npm run dev
