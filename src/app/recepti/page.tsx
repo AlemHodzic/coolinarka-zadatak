@@ -101,13 +101,9 @@ export default async function RecipesPage({ searchParams }: PageProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {recipes.map((recipe, index) => (
-              <div 
-                key={recipe.id} 
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-200">
+            {recipes.map((recipe) => (
+              <div key={recipe.id}>
                 <RecipeCard recipe={recipe} />
               </div>
             ))}
