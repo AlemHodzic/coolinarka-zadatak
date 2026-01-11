@@ -6,6 +6,8 @@ import { recipeUpdateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
 import { parseRecipeFromDb } from '@/types/recipe'
 import { rateLimit, getClientId } from '@/lib/rate-limit'
+import { getRecipeBySlug, getRecipeForEdit } from '@/lib/recipes'
+import { parseRecipeRequestBody } from '@/lib/api-utils'
 
 interface RouteParams {
   params: Promise<{ slug: string }>
@@ -25,10 +27,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const { slug } = await params
-    
-    const recipe = await prisma.recipe.findUnique({
-      where: { slug }
-    })
+    const recipe = await getRecipeBySlug(slug)
 
     if (!recipe) {
       return NextResponse.json(
@@ -37,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    return NextResponse.json(parseRecipeFromDb(recipe), {
+    return NextResponse.json(recipe, {
       headers: {
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
       },
@@ -75,9 +74,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { slug } = await params
     const body = await request.json()
 
-    const existing = await prisma.recipe.findUnique({
-      where: { slug }
-    })
+    const existing = await getRecipeForEdit(slug)
 
     if (!existing) {
       return NextResponse.json(
@@ -86,18 +83,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    const parsedBody = {
-      ...body,
-      ingredients: typeof body.ingredients === 'string' 
-        ? JSON.parse(body.ingredients) 
-        : body.ingredients,
-      steps: typeof body.steps === 'string' 
-        ? JSON.parse(body.steps) 
-        : body.steps,
-      tags: typeof body.tags === 'string'
-        ? JSON.parse(body.tags)
-        : body.tags
-    }
+    const parsedBody = parseRecipeRequestBody(body)
 
     const validation = recipeUpdateSchema.safeParse(parsedBody)
     if (!validation.success) {
@@ -135,7 +121,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(parseRecipeFromDb(recipe))
   } catch (error) {
-    
     // Handle unique constraint violation (slug conflict)
     if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json(
@@ -175,9 +160,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params
 
-    const existing = await prisma.recipe.findUnique({
-      where: { slug }
-    })
+    const existing = await getRecipeForEdit(slug)
 
     if (!existing) {
       return NextResponse.json(

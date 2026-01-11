@@ -6,6 +6,8 @@ import { recipeCreateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
 import { parseRecipeFromDb } from '@/types/recipe'
 import { rateLimit, getClientId } from '@/lib/rate-limit'
+import { getAllRecipes } from '@/lib/recipes'
+import { parseRecipeRequestBody } from '@/lib/api-utils'
 
 export async function GET(request: NextRequest) {
   // Rate limit: 100 requests per minute for reads
@@ -28,11 +30,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const recipes = await prisma.recipe.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
+    const recipes = await getAllRecipes()
 
-    return NextResponse.json(recipes.map(parseRecipeFromDb), {
+    return NextResponse.json(recipes, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
         'X-RateLimit-Limit': limit.limit.toString(),
@@ -75,18 +75,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const parsedBody = {
-      ...body,
-      ingredients: typeof body.ingredients === 'string' 
-        ? JSON.parse(body.ingredients) 
-        : body.ingredients,
-      steps: typeof body.steps === 'string' 
-        ? JSON.parse(body.steps) 
-        : body.steps,
-      tags: typeof body.tags === 'string'
-        ? JSON.parse(body.tags)
-        : body.tags
-    }
+    const parsedBody = parseRecipeRequestBody(body)
     
     const validation = recipeCreateSchema.safeParse(parsedBody)
     if (!validation.success) {
@@ -118,7 +107,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(parseRecipeFromDb(recipe), { status: 201 })
   } catch (error) {
-    
     if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json(
         { error: 'Recept s ovim nazivom već postoji' },

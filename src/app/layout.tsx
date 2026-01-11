@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { SessionProvider } from "@/components/providers/SessionProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -43,11 +42,9 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Preskoči na glavni sadržaj
         </a>
-        <SessionProvider>
-          <main id="main-content">
-            {children}
-          </main>
-        </SessionProvider>
+        <main id="main-content">
+          {children}
+        </main>
       </body>
     </html>
   );

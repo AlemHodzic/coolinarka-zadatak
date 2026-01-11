@@ -1,5 +1,5 @@
 import { RecipeForm } from '@/components/admin/RecipeForm'
-import { prisma } from '@/lib/db'
+import { getRecipeForEdit } from '@/lib/recipes'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -7,15 +7,9 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-async function getRecipe(slug: string) {
-  return prisma.recipe.findUnique({
-    where: { slug }
-  })
-}
-
 export default async function EditRecipePage({ params }: PageProps) {
   const { slug } = await params
-  const recipe = await getRecipe(slug)
+  const recipe = await getRecipeForEdit(slug)
 
   if (!recipe) {
     notFound()
@@ -64,4 +58,3 @@ export default async function EditRecipePage({ params }: PageProps) {
     </div>
   )
 }
-

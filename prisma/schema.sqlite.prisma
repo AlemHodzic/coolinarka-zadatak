@@ -3,7 +3,7 @@ generator client {
 }
 
 // SQLite configuration for LOCAL development only
-// Use: npm run dev:local
+// Use: npm run setup:local
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
@@ -25,5 +25,9 @@ model Recipe {
   steps       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
 
+  // Indexes for common queries
+  @@index([difficulty])
+  @@index([mealGroup])
+  @@index([createdAt(sort: Desc)])
+}

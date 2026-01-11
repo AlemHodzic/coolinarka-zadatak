@@ -1,16 +1,10 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/db'
+import { getAllRecipes } from '@/lib/recipes'
 import { DeleteButton } from '@/components/admin/DeleteButton'
 import { difficultyLabels, mealGroupLabels } from '@/types/recipe'
 
-async function getRecipes() {
-  return prisma.recipe.findMany({
-    orderBy: { createdAt: 'desc' }
-  })
-}
-
 export default async function AdminRecipesPage() {
-  const recipes = await getRecipes()
+  const recipes = await getAllRecipes()
 
   return (
     <div>
@@ -52,14 +46,14 @@ export default async function AdminRecipesPage() {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-warm-600">
-                  {mealGroupLabels[recipe.mealGroup as keyof typeof mealGroupLabels] || recipe.mealGroup}
+                  {mealGroupLabels[recipe.mealGroup] || recipe.mealGroup}
                 </td>
                 <td className="px-6 py-4">
                   <span className={`badge ${
                     recipe.difficulty === 'EASY' ? 'badge-easy' : 
                     recipe.difficulty === 'MEDIUM' ? 'badge-medium' : 'badge-hard'
                   }`}>
-                    {difficultyLabels[recipe.difficulty as keyof typeof difficultyLabels] || recipe.difficulty}
+                    {difficultyLabels[recipe.difficulty] || recipe.difficulty}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-warm-600">
@@ -97,4 +91,3 @@ export default async function AdminRecipesPage() {
     </div>
   )
 }
-

@@ -26,4 +26,9 @@ model Recipe {
   steps       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Indexes for common queries
+  @@index([difficulty])
+  @@index([mealGroup])
+  @@index([createdAt(sort: Desc)])
 }

@@ -2,38 +2,18 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { prisma } from '@/lib/db'
 import { getHeroUrl, getOgImageUrl } from '@/lib/cdn'
 import { DifficultyBadge, MealGroupBadge, Badge } from '@/components/ui/Badge'
-import { Recipe, prepMethodLabels, parseRecipeFromDb } from '@/types/recipe'
+import { prepMethodLabels } from '@/types/recipe'
+import { getRecipeBySlug } from '@/lib/recipes'
 
 interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-async function getRecipe(slug: string): Promise<Recipe | null> {
-  const recipe = await prisma.recipe.findUnique({
-    where: { slug }
-  })
-  
-  if (!recipe) return null
-  
-  return parseRecipeFromDb(recipe)
-}
-
-export async function generateStaticParams() {
-  const recipes = await prisma.recipe.findMany({
-    select: { slug: true }
-  })
-  
-  return recipes.map((recipe) => ({
-    slug: recipe.slug,
-  }))
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const recipe = await getRecipe(slug)
+  const recipe = await getRecipeBySlug(slug)
   
   if (!recipe) {
     return {
@@ -68,11 +48,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+// Use on-demand ISR instead of generateStaticParams for better scalability
+export const dynamicParams = true
 export const revalidate = 3600 // ISR: revalidate every hour
 
 export default async function RecipePage({ params }: PageProps) {
   const { slug } = await params
-  const recipe = await getRecipe(slug)
+  const recipe = await getRecipeBySlug(slug)
 
   if (!recipe) {
     notFound()
@@ -126,7 +108,7 @@ export default async function RecipePage({ params }: PageProps) {
                 href="/recepti" 
                 className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4 transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Natrag na recepte
@@ -149,7 +131,7 @@ export default async function RecipePage({ params }: PageProps) {
           <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 -mt-16 relative z-10 mb-10">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
-                <div className="text-3xl mb-2">⏱️</div>
+                <div className="text-3xl mb-2" aria-hidden="true">⏱️</div>
                 <p className="text-warm-500 text-sm">Vrijeme pripreme</p>
                 <p className="font-display text-xl font-semibold text-warm-900">
                   {recipe.prepTime} min
@@ -157,7 +139,7 @@ export default async function RecipePage({ params }: PageProps) {
               </div>
               
               <div className="text-center">
-                <div className="text-3xl mb-2">👥</div>
+                <div className="text-3xl mb-2" aria-hidden="true">👥</div>
                 <p className="text-warm-500 text-sm">Broj porcija</p>
                 <p className="font-display text-xl font-semibold text-warm-900">
                   {recipe.servings}
@@ -165,7 +147,7 @@ export default async function RecipePage({ params }: PageProps) {
               </div>
               
               <div className="text-center">
-                <div className="text-3xl mb-2">📊</div>
+                <div className="text-3xl mb-2" aria-hidden="true">📊</div>
                 <p className="text-warm-500 text-sm">Težina pripreme</p>
                 <div className="mt-1">
                   <DifficultyBadge difficulty={recipe.difficulty} />
@@ -173,7 +155,7 @@ export default async function RecipePage({ params }: PageProps) {
               </div>
               
               <div className="text-center">
-                <div className="text-3xl mb-2">🍽️</div>
+                <div className="text-3xl mb-2" aria-hidden="true">🍽️</div>
                 <p className="text-warm-500 text-sm">Način pripreme</p>
                 <p className="font-display text-lg font-semibold text-warm-900">
                   {prepMethodLabels[recipe.prepMethod]}
@@ -197,12 +179,12 @@ export default async function RecipePage({ params }: PageProps) {
             <div className="md:col-span-1">
               <div className="bg-warm-50 rounded-2xl p-6 sticky top-24">
                 <h2 className="font-display text-2xl font-bold text-warm-900 mb-6 flex items-center gap-2">
-                  <span>🥄</span> Sastojci
+                  <span aria-hidden="true">🥄</span> Sastojci
                 </h2>
                 <ul className="space-y-3">
                   {recipe.ingredients.map((ingredient, index) => (
                     <li key={index} className="flex items-start gap-3 text-warm-700">
-                      <span className="w-2 h-2 rounded-full bg-primary-400 mt-2 flex-shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-primary-400 mt-2 flex-shrink-0" aria-hidden="true" />
                       <span>
                         {ingredient.quantity && (
                           <strong className="text-warm-900">
@@ -220,14 +202,14 @@ export default async function RecipePage({ params }: PageProps) {
             {/* Steps */}
             <div className="md:col-span-2">
               <h2 className="font-display text-2xl font-bold text-warm-900 mb-6 flex items-center gap-2">
-                <span>👨‍🍳</span> Priprema
+                <span aria-hidden="true">👨‍🍳</span> Priprema
               </h2>
               <ol className="space-y-6">
                 {recipe.steps
                   .sort((a, b) => a.order - b.order)
                   .map((step) => (
                     <li key={step.order} className="flex gap-4">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-lg">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-lg" aria-hidden="true">
                         {step.order}
                       </div>
                       <div className="flex-1 pt-2">
