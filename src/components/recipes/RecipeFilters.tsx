@@ -34,11 +34,14 @@ export function RecipeFilters() {
     })
   }, [router, searchParams])
 
-  // Debounce search input
+  // Debounce search input - only search with 2+ characters (or clear)
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchInput !== currentSearch) {
-        updateFilter('search', searchInput)
+        // Only trigger search if 2+ chars or clearing
+        if (searchInput.length >= 2 || searchInput.length === 0) {
+          updateFilter('search', searchInput)
+        }
       }
     }, 300)
 
@@ -67,7 +70,7 @@ export function RecipeFilters() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Naziv recepta..."
+              placeholder="Naziv ili opis..."
               className="w-full px-3 py-2 rounded-lg border border-warm-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all text-sm"
             />
             {isPending && (
@@ -76,6 +79,9 @@ export function RecipeFilters() {
               </div>
             )}
           </div>
+          {searchInput.length === 1 && (
+            <p className="text-xs text-warm-400 mt-1">Unesite još 1 znak za pretragu</p>
+          )}
         </div>
 
         {/* Difficulty */}

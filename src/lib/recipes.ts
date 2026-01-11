@@ -6,8 +6,10 @@
 import { cache } from 'react'
 import { prisma } from './db'
 import { Recipe, parseRecipeFromDb } from '@/types/recipe'
+import { DIFFICULTIES, MEAL_GROUPS } from './constants'
 
 const DEFAULT_PAGE_SIZE = 12
+const MIN_SEARCH_LENGTH = 2
 
 export interface RecipeFilters {
   difficulty?: string
@@ -34,24 +36,27 @@ export interface PaginatedResult<T> {
 
 /**
  * Build Prisma where clause from filters
+ * Validates filter values to prevent invalid data being sent to DB
  */
 function buildWhereClause(filters?: RecipeFilters): Record<string, unknown> {
   const where: Record<string, unknown> = {}
 
-  if (filters?.difficulty) {
+  // Validate difficulty against allowed values
+  if (filters?.difficulty && DIFFICULTIES.includes(filters.difficulty as typeof DIFFICULTIES[number])) {
     where.difficulty = filters.difficulty
   }
 
-  if (filters?.mealGroup) {
+  // Validate mealGroup against allowed values
+  if (filters?.mealGroup && MEAL_GROUPS.includes(filters.mealGroup as typeof MEAL_GROUPS[number])) {
     where.mealGroup = filters.mealGroup
   }
 
-  if (filters?.search) {
-    // Note: 'mode: insensitive' only works with PostgreSQL
-    // For SQLite, LIKE is case-insensitive by default for ASCII
-    where.title = {
-      contains: filters.search,
-    }
+  // Search in title AND lead, require minimum length
+  if (filters?.search && filters.search.length >= MIN_SEARCH_LENGTH) {
+    where.OR = [
+      { title: { contains: filters.search } },
+      { lead: { contains: filters.search } }
+    ]
   }
 
   return where
