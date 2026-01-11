@@ -5,8 +5,28 @@ import { auth } from '@/lib/auth'
 import { recipeCreateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
 import { parseRecipeFromDb } from '@/types/recipe'
+import { rateLimit, getClientId } from '@/lib/rate-limit'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limit: 100 requests per minute for reads
+  const clientId = getClientId(request)
+  const limit = rateLimit(`get-recipes:${clientId}`, { limit: 100, windowMs: 60 * 1000 })
+  
+  if (!limit.success) {
+    return NextResponse.json(
+      { error: 'Previše zahtjeva. Pokušajte ponovno kasnije.' },
+      { 
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': limit.limit.toString(),
+          'X-RateLimit-Remaining': limit.remaining.toString(),
+          'X-RateLimit-Reset': limit.reset.toString(),
+          'Retry-After': Math.ceil((limit.reset - Date.now()) / 1000).toString()
+        }
+      }
+    )
+  }
+
   try {
     const recipes = await prisma.recipe.findMany({
       orderBy: { createdAt: 'desc' }
@@ -15,6 +35,8 @@ export async function GET() {
     return NextResponse.json(recipes.map(parseRecipeFromDb), {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'X-RateLimit-Limit': limit.limit.toString(),
+        'X-RateLimit-Remaining': limit.remaining.toString(),
       },
     })
   } catch (error) {
@@ -27,6 +49,22 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 creates per minute (stricter for writes)
+  const clientId = getClientId(request)
+  const limit = rateLimit(`post-recipes:${clientId}`, { limit: 10, windowMs: 60 * 1000 })
+  
+  if (!limit.success) {
+    return NextResponse.json(
+      { error: 'Previše zahtjeva. Pokušajte ponovno kasnije.' },
+      { 
+        status: 429,
+        headers: {
+          'Retry-After': Math.ceil((limit.reset - Date.now()) / 1000).toString()
+        }
+      }
+    )
+  }
+
   // Check authentication - only logged-in users can create recipes
   const session = await auth()
   if (!session) {

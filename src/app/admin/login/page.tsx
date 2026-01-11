@@ -119,9 +119,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <p className="text-center text-warm-500 text-sm mt-6">
-            Demo: admin / admin123
-          </p>
         </form>
 
         <div className="text-center mt-6">

@@ -5,12 +5,24 @@ import { auth } from '@/lib/auth'
 import { recipeUpdateSchema } from '@/lib/validation'
 import { generateUniqueSlug } from '@/lib/slug'
 import { parseRecipeFromDb } from '@/types/recipe'
+import { rateLimit, getClientId } from '@/lib/rate-limit'
 
 interface RouteParams {
   params: Promise<{ slug: string }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  // Rate limit: 100 requests per minute
+  const clientId = getClientId(request)
+  const limit = rateLimit(`get-recipe:${clientId}`, { limit: 100, windowMs: 60 * 1000 })
+  
+  if (!limit.success) {
+    return NextResponse.json(
+      { error: 'Previše zahtjeva. Pokušajte ponovno kasnije.' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    )
+  }
+
   try {
     const { slug } = await params
     
@@ -40,6 +52,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
+  // Rate limit: 20 updates per minute
+  const clientId = getClientId(request)
+  const limit = rateLimit(`put-recipe:${clientId}`, { limit: 20, windowMs: 60 * 1000 })
+  
+  if (!limit.success) {
+    return NextResponse.json(
+      { error: 'Previše zahtjeva. Pokušajte ponovno kasnije.' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    )
+  }
+
   // Check authentication - only logged-in users can update recipes
   const session = await auth()
   if (!session) {
@@ -131,6 +154,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
+  // Rate limit: 10 deletes per minute
+  const clientId = getClientId(request)
+  const limit = rateLimit(`delete-recipe:${clientId}`, { limit: 10, windowMs: 60 * 1000 })
+  
+  if (!limit.success) {
+    return NextResponse.json(
+      { error: 'Previše zahtjeva. Pokušajte ponovno kasnije.' },
+      { status: 429, headers: { 'Retry-After': '60' } }
+    )
+  }
+
   // Check authentication - only logged-in users can delete recipes
   const session = await auth()
   if (!session) {
