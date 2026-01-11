@@ -249,7 +249,7 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border border-warm-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all"
-              placeholder="tradicionalno, zimnica, svinjetina (odvojeno zarezom)"
+              placeholder="tradicionalno, zimnica (odvojeno zarezom)"
             />
           </div>
         </div>
