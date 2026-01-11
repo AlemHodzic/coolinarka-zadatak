@@ -1,319 +1,142 @@
-# 🍳 Coolinarika Recepti
+# Coolinarika Recepti
 
-A production-ready recipe application built with Next.js 14, demonstrating modern full-stack development practices, SEO optimization, and clean architecture.
+A recipe application built with Next.js 14, featuring a full CRUD API, SEO optimization, and a simulated CDN for images.
 
 **Live Demo**: https://coolinarka-zadatak.vercel.app
 
 ---
 
-## 📋 Table of Contents
+## Quick Start (Local Development)
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [CDN Strategy](#cdn-strategy)
-- [Design Decisions](#design-decisions)
-
----
-
-## ✨ Features
-
-- **Recipe List View** (`/recepti`) - Browse all recipes with filtering by difficulty, meal group
-- **Recipe Detail View** (`/recepti/[slug]`) - Full recipe with ingredients, steps, and metadata
-- **Admin Panel** (`/admin`) - Protected admin area for recipe management
-  - NextAuth.js authentication with credentials
-  - Create, edit, and delete recipes via intuitive forms
-  - Middleware-protected routes
-- **Full CRUD API** - Create, read, update, delete recipes via REST API
-- **CDN Simulation** - Fake CDN route with proper Cache-Control headers, demonstrating CDN concepts
-- **SEO Optimized** - Dynamic metadata, Open Graph tags, JSON-LD structured data
-- **Server-Side Rendering** - Fast initial loads and SEO-friendly content
-- **Incremental Static Regeneration** - Static pages that update automatically
-- **Responsive Design** - Beautiful UI inspired by Coolinarika, works on all devices
-
----
-
-## 🛠 Tech Stack
-
-| Layer | Technology | Why |
-|-------|------------|-----|
-| **Framework** | Next.js 14 (App Router) | SSR/SSG for SEO, API routes for backend, best DX |
-| **Database** | SQLite (dev) / PostgreSQL (prod) | Zero-config local dev, production-ready in cloud |
-| **ORM** | Prisma | Type-safe queries, migrations, excellent tooling |
-| **Auth** | NextAuth.js v5 | Industry standard, JWT sessions, middleware protection |
-| **Styling** | Tailwind CSS | Utility-first, rapid development, consistent design |
-| **Validation** | Zod | Runtime type validation with great TypeScript integration |
-| **Images** | Fake CDN Route | Static files with Cache-Control headers, `CDN_BASE_URL` env |
-| **Language** | TypeScript | End-to-end type safety |
-| **Deployment** | Vercel | Native Next.js support, edge functions, global CDN |
-
----
-
-## 🏗 Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Client Browser                           │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Next.js Application                         │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │                       Middleware                             ││
-│  │  • Auth check for /admin/* routes                           ││
-│  │  • JWT session validation                                    ││
-│  └─────────────────────────────────────────────────────────────┘│
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │                     App Router (SSR/SSG)                    ││
-│  │  • /recepti           → Server Component (SSR)              ││
-│  │  • /recepti/[slug]    → Static + ISR (revalidate: 3600)     ││
-│  │  • /admin/*           → Protected admin routes              ││
-│  └─────────────────────────────────────────────────────────────┘│
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    API Route Handlers                        ││
-│  │  • GET    /api/recipes       → List all recipes              ││
-│  │  • POST   /api/recipes       → Create recipe                 ││
-│  │  • GET    /api/recipes/:slug → Get single recipe             ││
-│  │  • PUT    /api/recipes/:slug → Update recipe                 ││
-│  │  • DELETE /api/recipes/:slug → Delete recipe                 ││
-│  │  • /api/auth/*               → NextAuth.js handlers          ││
-│  └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
-                │                                    │
-                ▼                                    ▼
-┌───────────────────────────┐        ┌─────────────────────────────┐
-│      PostgreSQL DB        │        │       CDN (Simulated)       │
-│  • Recipe data            │        │  • /api/cdn/* route         │
-│  • Prisma ORM             │        │  • Cache-Control headers    │
-│  • Type-safe queries      │        │  • CDN_BASE_URL env var     │
-└───────────────────────────┘        └─────────────────────────────┘
-```
-
-### Server vs Client Separation
-
-| Responsibility | Location | Examples |
-|----------------|----------|----------|
-| Data fetching | Server | `prisma.recipe.findMany()` in page components |
-| SEO metadata | Server | `generateMetadata()` function |
-| Initial render | Server | All page components are Server Components by default |
-| Image optimization | CDN | Simulated CDN with Cache-Control headers |
-| Interactive UI | Client | Form handling, animations (marked with `'use client'`) |
-
----
-
-## 🚀 Getting Started
-
-### Local Development (SQLite - Zero Config!)
-
-The app works locally with **no external services required**:
+The app runs locally with SQLite - no external database needed.
 
 ```bash
-# 1. Install dependencies
+# Install dependencies
 npm install
 
-# 2. Set up SQLite database and seed data
+# Set up the database and seed sample recipes
 npm run setup:local
 
-# 3. Start the app
+# Start the dev server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) - you should see 8 recipes!
+Open [http://localhost:3000](http://localhost:3000) and you should see 8 recipes.
 
-**What `setup:local` does:**
-- Switches Prisma to use SQLite (`prisma/dev.db`)
-- Creates the database tables
-- Seeds 8 sample recipes with images
+The `setup:local` script switches Prisma to SQLite, creates the tables, and seeds the database with sample recipes.
 
-> **Note:** The build script automatically switches to PostgreSQL for Vercel deployments. You don't need to manually change the schema before committing.
+### Admin Panel
+
+To manage recipes via the admin panel:
+- Go to `/admin/login`
+- Login with `admin` / `admin123`
 
 ---
 
-### Vercel Deployment (PostgreSQL)
+## Deploying to Vercel
 
-For production, the app uses **Vercel Postgres**:
+For production, the app uses PostgreSQL.
 
-#### 1. Add Vercel Postgres Database
+### 1. Set up the database
 
 1. Go to your [Vercel Dashboard](https://vercel.com/dashboard)
-2. Select your project → **Storage** tab → **Create Database** → **Postgres**
+2. Select your project → **Storage** → **Create Database** → **Postgres**
 3. Click **Connect** to link it to your project
-4. Vercel automatically adds these environment variables:
-   - `POSTGRES_PRISMA_URL`
-   - `POSTGRES_URL_NON_POOLING`
 
-#### 2. Set Environment Variables
+Vercel will automatically add the `POSTGRES_URL` environment variable.
 
-In Vercel project settings → **Environment Variables**, add:
+### 2. Add environment variables
 
-```env
+In your Vercel project settings, add:
+
+```
 AUTH_SECRET=your-random-32-char-string
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=your-secure-password
 ```
 
-> **Note:** If using Prisma Postgres, the `POSTGRES_URL` variable is automatically set when you connect the database.
+Generate `AUTH_SECRET` with: `openssl rand -base64 32`
 
-#### 3. Deploy
+### 3. Deploy
 
-Push your changes. The build will automatically:
+Push to GitHub. The build script will automatically:
 - Run `prisma db push` to create tables
-- Run `prisma/seed.ts` to add sample recipes
+- Seed the database with sample recipes
 - Build the Next.js app
 
 ---
 
-### Troubleshooting
+## Features
 
-| Problem | Solution |
-|---------|----------|
-| Database errors | Delete `prisma/dev.db` and run `npm run setup` again |
-| Port 3000 in use | Run `npm run dev -- -p 3001` |
-| Prisma errors | Run `npx prisma generate` |
+- **Recipe List** (`/recepti`) - Browse recipes with difficulty badges, prep time, meal groups
+- **Recipe Detail** (`/recepti/[slug]`) - Full recipe with ingredients, steps, and metadata
+- **Admin Panel** (`/admin`) - Protected area for creating, editing, and deleting recipes
+- **REST API** - Full CRUD at `/api/recipes`
+- **CDN Simulation** - Images served via a fake CDN route with proper cache headers
+- **SEO** - Dynamic metadata, Open Graph tags, JSON-LD structured data
+- **ISR** - Recipe pages use Incremental Static Regeneration
 
 ---
 
-## 📁 Project Structure
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 14 (App Router) |
+| Database | SQLite (dev) / PostgreSQL (prod) |
+| ORM | Prisma |
+| Auth | NextAuth.js v5 |
+| Styling | Tailwind CSS |
+| Validation | Zod |
+| Language | TypeScript |
+
+---
+
+## Project Structure
 
 ```
 src/
 ├── app/
 │   ├── api/
-│   │   ├── auth/[...nextauth]/   # NextAuth.js route handlers
-│   │   ├── cdn/[...path]/        # Fake CDN with Cache-Control headers
-│   │   │   └── route.ts
-│   │   └── recipes/
-│   │       ├── route.ts          # GET all, POST
-│   │       └── [slug]/
-│   │           └── route.ts      # GET one, PUT, DELETE
-│   ├── admin/
-│   │   ├── layout.tsx            # Admin layout with navigation
-│   │   ├── login/page.tsx        # Admin login page
-│   │   └── recepti/
-│   │       ├── page.tsx          # Recipe management list
-│   │       ├── new/page.tsx      # Create recipe form
-│   │       └── [slug]/edit/      # Edit recipe form
-│   ├── recepti/
-│   │   ├── page.tsx              # Recipe list (SSR)
-│   │   ├── loading.tsx           # Loading skeleton
-│   │   └── [slug]/
-│   │       ├── page.tsx          # Recipe detail (SSG + ISR)
-│   │       └── loading.tsx       # Loading skeleton
-│   ├── layout.tsx                # Root layout
-│   ├── globals.css               # Global styles + Tailwind
-│   └── not-found.tsx             # 404 page
+│   │   ├── auth/[...nextauth]/   # Auth handlers
+│   │   ├── cdn/[...path]/        # Fake CDN route
+│   │   └── recipes/              # CRUD endpoints
+│   ├── admin/                    # Protected admin panel
+│   ├── recepti/                  # Public recipe pages
+│   ├── layout.tsx
+│   └── globals.css
 ├── components/
-│   ├── admin/
-│   │   ├── DeleteButton.tsx      # Delete confirmation
-│   │   ├── RecipeForm.tsx        # Recipe create/edit form
-│   │   └── SignOutButton.tsx     # Logout button
-│   ├── providers/
-│   │   └── SessionProvider.tsx   # NextAuth session provider
-│   ├── ui/
-│   │   └── Badge.tsx             # Reusable badge components
-│   └── recipes/
-│       └── RecipeCard.tsx        # Recipe card for list view
+│   ├── admin/                    # Admin forms and buttons
+│   ├── recipes/                  # Recipe card component
+│   └── ui/                       # Reusable UI components
 ├── lib/
-│   ├── auth.ts                   # NextAuth.js configuration
-│   ├── db.ts                     # Prisma client singleton
-│   ├── cdn.ts                    # CDN URL builder (uses CDN_BASE_URL)
+│   ├── auth.ts                   # NextAuth config
+│   ├── db.ts                     # Prisma client
+│   ├── cdn.ts                    # CDN URL builder
 │   ├── validation.ts             # Zod schemas
 │   └── slug.ts                   # Slug generation
-├── middleware.ts                 # Auth middleware for /admin/*
+├── middleware.ts                 # Auth middleware
 └── types/
-    └── recipe.ts                 # TypeScript interfaces
+    └── recipe.ts                 # TypeScript types
 
 prisma/
 ├── schema.prisma                 # Database schema
-└── seed.ts                       # Seed data script
+└── seed.ts                       # Seed data
 ```
 
 ---
 
-## 🔐 Admin Panel
+## API Endpoints
 
-The application includes a protected admin panel for managing recipes.
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/recipes` | List all recipes | No |
+| GET | `/api/recipes/:slug` | Get single recipe | No |
+| POST | `/api/recipes` | Create recipe | Yes |
+| PUT | `/api/recipes/:slug` | Update recipe | Yes |
+| DELETE | `/api/recipes/:slug` | Delete recipe | Yes |
 
-### Access
-- **URL**: `/admin/login`
-- **Default credentials**: `admin` / `admin123`
-
-### Features
-- **Recipe Management**: Create, edit, and delete recipes
-- **Form Validation**: Client-side and server-side validation
-- **Protected Routes**: Middleware-based authentication
-- **JWT Sessions**: Secure, stateless authentication
-
-### Configuration
-
-Set custom admin credentials via environment variables:
-
-```env
-ADMIN_USERNAME="your-username"
-ADMIN_PASSWORD="your-password"
-AUTH_SECRET="your-secret-key"  # Generate with: openssl rand -base64 32
-```
-
-### How It Works
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Admin Authentication Flow                 │
-├─────────────────────────────────────────────────────────────┤
-│  1. User visits /admin/*                                     │
-│  2. Middleware checks for valid JWT session                  │
-│  3. If no session → redirect to /admin/login                 │
-│  4. User enters credentials                                  │
-│  5. NextAuth validates against env vars                      │
-│  6. On success → JWT issued, redirect to /admin/recepti      │
-│  7. All admin routes now accessible                          │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📡 API Documentation
-
-### List Recipes
-
-```http
-GET /api/recipes
-```
-
-Response: `200 OK`
-```json
-[
-  {
-    "id": "clx...",
-    "slug": "sarma",
-    "title": "Sarma",
-    "lead": "Tradicionalna sarma...",
-    "imageId": "/recipes/sarma/hero.jpg",
-    "prepTime": 180,
-    "servings": 8,
-    "difficulty": "HARD",
-    "mealGroup": "MAIN_DISH",
-    "prepMethod": "COOKING",
-    "tags": ["tradicionalno", "zimsko"],
-    "ingredients": [...],
-    "steps": [...],
-    "createdAt": "2026-...",
-    "updatedAt": "2026-..."
-  }
-]
-```
-
-### Get Single Recipe
-
-```http
-GET /api/recipes/:slug
-```
-
-### Create Recipe
+### Example: Create a recipe
 
 ```http
 POST /api/recipes
@@ -330,7 +153,7 @@ Content-Type: application/json
   "prepMethod": "COOKING",
   "tags": ["brzo", "jednostavno"],
   "ingredients": [
-    { "name": "Sastojak", "quantity": "100", "unit": "g" }
+    { "name": "Brašno", "quantity": "100", "unit": "g" }
   ],
   "steps": [
     { "order": 1, "instruction": "Prvi korak..." }
@@ -338,158 +161,86 @@ Content-Type: application/json
 }
 ```
 
-### Update Recipe
-
-```http
-PUT /api/recipes/:slug
-Content-Type: application/json
-
-{
-  "title": "Ažurirani naziv"
-}
-```
-
-### Delete Recipe
-
-```http
-DELETE /api/recipes/:slug
-```
-
-### Error Responses
+### Error codes
 
 | Status | Meaning |
 |--------|---------|
-| `400` | Invalid input data |
-| `401` | Unauthorized (authentication required for POST/PUT/DELETE) |
-| `404` | Recipe not found |
-| `409` | Conflict (e.g., slug already exists) |
-| `500` | Server error |
-
-> **Note:** The `POST`, `PUT`, and `DELETE` endpoints require authentication. You must be logged in via the admin panel (`/admin/login`) to modify recipes.
+| 400 | Invalid input |
+| 401 | Not authenticated |
+| 404 | Recipe not found |
+| 409 | Slug already exists |
 
 ---
 
-## 🖼 CDN Strategy
+## CDN Strategy
 
-This project implements a **simulated CDN** as requested in the task specification.
-
-### How It Works
+The app demonstrates how to model CDN image delivery:
 
 1. **Database stores only the path**: `imageId: "/recipes/sarma/hero.jpg"`
-2. **`CDN_BASE_URL` env variable**: Can point to fake CDN (`/api/cdn`) or real CDN (`https://cdn.example.com`)
-3. **URLs are built dynamically**: `${CDN_BASE_URL}${imageId}`
+2. **`CDN_BASE_URL` env variable** controls where images come from
+3. **URLs are built at runtime**: `${CDN_BASE_URL}${imageId}`
 
-### File Structure
+### Local development
+
+Images are served from `/public/cdn/` via a fake CDN route at `/api/cdn/*`. This route adds proper cache headers:
 
 ```
-public/cdn/
-└── recipes/
-    ├── sarma/
-    │   └── hero.jpg
-    ├── cevapi/
-    │   └── hero.jpg
-    ├── burek/
-    │   └── hero.jpg
-    └── ... (more recipes)
+Cache-Control: public, max-age=31536000, s-maxage=31536000, immutable
+ETag: "..."
 ```
 
-### Fake CDN Route (`/api/cdn/[...path]`)
+### Production
 
-The route handler serves static files with proper CDN cache headers:
-
-```typescript
-// Response headers demonstrating CDN concepts:
-{
-  'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
-  'ETag': '"abc123..."',
-  'Vary': 'Accept-Encoding',
-  'X-CDN-Cache': 'SIMULATED'
-}
-```
-
-### URL Builder (`lib/cdn.ts`)
-
-```typescript
-// Environment variable
-CDN_BASE_URL = '/api/cdn'  // local
-CDN_BASE_URL = 'https://cdn.example.com'  // production
-
-// Usage
-getCdnUrl('/recipes/sarma/hero.jpg')
-// → /api/cdn/recipes/sarma/hero.jpg (local)
-// → https://cdn.example.com/recipes/sarma/hero.jpg (prod)
-```
-
-### CDN Features Demonstrated
-
-| Feature | Implementation |
-|---------|----------------|
-| **Path-based storage** | DB stores `/recipes/slug/hero.jpg`, not full URL |
-| **Base URL config** | `CDN_BASE_URL` env var for easy switching |
-| **Cache-Control** | `max-age=31536000` (1 year), `s-maxage`, `immutable` |
-| **ETag** | For cache validation |
-| **Content-Type** | Proper MIME types for images |
-| **Security** | Directory traversal prevention |
-
-### Switching to Production CDN
-
-To use a real CDN (e.g., Cloudflare, CloudFront), simply:
-
+To use a real CDN:
 1. Upload `public/cdn/` contents to your CDN
 2. Set `NEXT_PUBLIC_CDN_BASE_URL=https://cdn.yoursite.com`
-3. All images will be served from the real CDN
+
+The structure is designed so you can easily add more image variants (thumbnails, different sizes) later.
 
 ---
 
-## 🎨 Design Decisions
+## Architecture Notes
 
-### Why Next.js App Router (not Pages Router)?
+### Server vs Client separation
 
-- Server Components reduce client-side JavaScript
-- Better streaming and suspense support
-- Improved data fetching patterns with `async` components
-- Native metadata API for SEO
+| What | Where |
+|------|-------|
+| Data fetching | Server Components (direct Prisma calls) |
+| SEO metadata | Server (`generateMetadata()`) |
+| Interactive forms | Client (`'use client'` directive) |
 
-### Why Prisma over raw SQL?
+### Why these choices?
 
-- Type-safe database queries
-- Auto-generated TypeScript types from schema
-- Easy migrations and schema management
-- Great developer experience with Prisma Studio
+**Next.js App Router** - Server Components reduce client JS, better SEO with native metadata API.
+
+**Prisma** - Type-safe queries, auto-generated types, easy to switch between SQLite and PostgreSQL.
+
+**Zod** - Runtime validation that integrates nicely with TypeScript.
 
 ---
 
-## 📝 Scripts
+## Available Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run setup:local` | **Switch to SQLite + seed database** (for local dev) |
-| `npm run build` | Build for production (uses PostgreSQL) |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run db:push` | Push Prisma schema to database |
-| `npm run db:seed` | Seed database with sample recipes |
+| `npm run dev` | Start dev server |
+| `npm run setup:local` | Set up SQLite + seed data |
+| `npm run build` | Production build |
 | `npm run db:studio` | Open Prisma Studio |
+| `npm run db:seed` | Re-seed the database |
 
 ---
 
-## 🌐 Deployment
+## Troubleshooting
 
-### Vercel (Recommended)
+**Database errors?** Delete `prisma/dev.db` and run `npm run setup:local` again.
 
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Add **Prisma Postgres** database (Storage → Create Database → Prisma Postgres)
-4. Add environment variables:
-   - `AUTH_SECRET` - Generate with `openssl rand -base64 32`
-   - `ADMIN_USERNAME` and `ADMIN_PASSWORD` (optional, defaults: admin/admin123)
-   - `NEXT_PUBLIC_CDN_BASE_URL` - CDN URL (optional, defaults to `/api/cdn`)
-   - Note: `POSTGRES_URL` is auto-set by Prisma Postgres
-5. Deploy!
+**Port 3000 busy?** Run `npm run dev -- -p 3001`
+
+**Prisma issues?** Try `npx prisma generate`
 
 ---
 
-## 📄 License
+## License
 
 MIT
