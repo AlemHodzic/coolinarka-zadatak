@@ -93,8 +93,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         'X-CDN-Path': filePath,
       },
     })
-  } catch (error) {
-    console.error('CDN Error:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Failed to serve file' },
       { status: 500 }

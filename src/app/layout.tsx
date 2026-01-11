@@ -40,8 +40,13 @@ export default function RootLayout({
   return (
     <html lang="hr" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${playfair.variable} antialiased min-h-screen`} suppressHydrationWarning>
+        <a href="#main-content" className="skip-link">
+          Preskoči na glavni sadržaj
+        </a>
         <SessionProvider>
-          {children}
+          <main id="main-content">
+            {children}
+          </main>
         </SessionProvider>
       </body>
     </html>

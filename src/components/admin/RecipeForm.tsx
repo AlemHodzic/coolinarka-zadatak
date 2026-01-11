@@ -169,8 +169,7 @@ export function RecipeForm({ initialData, mode }: RecipeFormProps) {
         setError(errorMessage)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
-    } catch (err) {
-      console.error('Form submission error:', err)
+    } catch {
       setError('Greška pri spremanju recepta')
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {

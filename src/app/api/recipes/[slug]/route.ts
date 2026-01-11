@@ -42,8 +42,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
       },
     })
-  } catch (error) {
-    console.error('Failed to fetch recipe:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Greška pri dohvaćanju recepta' },
       { status: 500 }
@@ -136,7 +135,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(parseRecipeFromDb(recipe))
   } catch (error) {
-    console.error('Failed to update recipe:', error)
     
     // Handle unique constraint violation (slug conflict)
     if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -193,8 +191,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     })
 
     return NextResponse.json({ message: 'Recept je uspješno obrisan' })
-  } catch (error) {
-    console.error('Failed to delete recipe:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Greška pri brisanju recepta' },
       { status: 500 }

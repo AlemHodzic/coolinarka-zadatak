@@ -13,17 +13,49 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 100;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 @layer base {
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 600;
     color: #2d2a26;
   }
+
+  /* Improved focus styles for accessibility */
+  *:focus-visible {
+    outline: 2px solid #e85d04;
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus outline, use focus-visible instead */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 @layer components {
   .recipe-card {
     @apply bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+  }
+
+  /* Focus styles for recipe cards */
+  .recipe-card:focus-within {
+    @apply ring-2 ring-primary-500 ring-offset-2;
   }
 
   .badge {
@@ -73,5 +105,31 @@ body {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .recipe-card {
+    transition: none;
+  }
+
+  .recipe-card:hover {
+    transform: none;
   }
 }

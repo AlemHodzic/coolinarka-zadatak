@@ -39,8 +39,7 @@ export async function GET(request: NextRequest) {
         'X-RateLimit-Remaining': limit.remaining.toString(),
       },
     })
-  } catch (error) {
-    console.error('Failed to fetch recipes:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Greška pri dohvaćanju recepata' },
       { status: 500 }
@@ -119,7 +118,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(parseRecipeFromDb(recipe), { status: 201 })
   } catch (error) {
-    console.error('Failed to create recipe:', error)
     
     if (error instanceof PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json(

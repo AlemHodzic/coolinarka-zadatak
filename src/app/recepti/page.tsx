@@ -94,11 +94,25 @@ export default async function RecipesPage({ searchParams }: PageProps) {
 
         {recipes.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-warm-500 text-lg">
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-warm-700 text-lg font-medium mb-2">
               {hasFilters 
-                ? 'Nema recepata koji odgovaraju filtrima.' 
-                : 'Nema recepata za prikaz.'}
+                ? 'Nema recepata koji odgovaraju filtrima' 
+                : 'Nema recepata za prikaz'}
             </p>
+            {hasFilters && (
+              <p className="text-warm-500 mb-6">
+                Pokušajte promijeniti ili ukloniti neke filtere
+              </p>
+            )}
+            {hasFilters && (
+              <a 
+                href="/recepti" 
+                className="btn btn-secondary"
+              >
+                Očisti sve filtere
+              </a>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-200">
