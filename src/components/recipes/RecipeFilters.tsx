@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { difficultyLabels, mealGroupLabels } from '@/types/recipe'
 
@@ -11,7 +12,15 @@ export function RecipeFilters() {
   const currentMealGroup = searchParams.get('mealGroup') || ''
   const currentSearch = searchParams.get('search') || ''
 
-  function updateFilter(key: string, value: string) {
+  // Local state for search input (for debouncing)
+  const [searchInput, setSearchInput] = useState(currentSearch)
+
+  // Sync local state when URL changes (e.g., clear filters)
+  useEffect(() => {
+    setSearchInput(currentSearch)
+  }, [currentSearch])
+
+  const updateFilter = useCallback((key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {
       params.set(key, value)
@@ -19,9 +28,21 @@ export function RecipeFilters() {
       params.delete(key)
     }
     router.push(`/recepti?${params.toString()}`)
-  }
+  }, [router, searchParams])
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchInput !== currentSearch) {
+        updateFilter('search', searchInput)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchInput, currentSearch, updateFilter])
 
   function clearFilters() {
+    setSearchInput('')
     router.push('/recepti')
   }
 
@@ -37,8 +58,8 @@ export function RecipeFilters() {
           </label>
           <input
             type="text"
-            value={currentSearch}
-            onChange={(e) => updateFilter('search', e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Naziv recepta..."
             className="w-full px-3 py-2 rounded-lg border border-warm-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all text-sm"
           />
