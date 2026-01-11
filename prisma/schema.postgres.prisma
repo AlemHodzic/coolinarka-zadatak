@@ -3,6 +3,7 @@ generator client {
 }
 
 // PostgreSQL for Vercel deployment
+// For local SQLite development, run: npm run setup:local
 datasource db {
   provider  = "postgresql"
   url       = env("POSTGRES_URL")
@@ -25,4 +26,9 @@ model Recipe {
   steps       String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Indexes for common queries
+  @@index([difficulty])
+  @@index([mealGroup])
+  @@index([createdAt(sort: Desc)])
 }
