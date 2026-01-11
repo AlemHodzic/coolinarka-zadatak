@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 import { prisma } from '@/lib/db'
 import { RecipeCard } from '@/components/recipes/RecipeCard'
+import { RecipeFilters } from '@/components/recipes/RecipeFilters'
 import { Recipe, parseRecipeFromDb } from '@/types/recipe'
 
 export const metadata: Metadata = {
@@ -8,16 +10,48 @@ export const metadata: Metadata = {
   description: 'Pregledajte našu kolekciju tradicionalnih i modernih recepata balkanske kuhinje.',
 }
 
-async function getRecipes(): Promise<Recipe[]> {
+interface PageProps {
+  searchParams: Promise<{
+    difficulty?: string
+    mealGroup?: string
+    search?: string
+  }>
+}
+
+async function getRecipes(filters: {
+  difficulty?: string
+  mealGroup?: string
+  search?: string
+}): Promise<Recipe[]> {
+  const where: Record<string, unknown> = {}
+
+  if (filters.difficulty) {
+    where.difficulty = filters.difficulty
+  }
+
+  if (filters.mealGroup) {
+    where.mealGroup = filters.mealGroup
+  }
+
+  if (filters.search) {
+    where.title = {
+      contains: filters.search,
+      mode: 'insensitive'
+    }
+  }
+
   const recipes = await prisma.recipe.findMany({
+    where,
     orderBy: { createdAt: 'desc' }
   })
   
   return recipes.map(parseRecipeFromDb)
 }
 
-export default async function RecipesPage() {
-  const recipes = await getRecipes()
+export default async function RecipesPage({ searchParams }: PageProps) {
+  const filters = await searchParams
+  const recipes = await getRecipes(filters)
+  const hasFilters = filters.difficulty || filters.mealGroup || filters.search
 
   return (
     <div className="min-h-screen">
@@ -42,10 +76,10 @@ export default async function RecipesPage() {
 
       {/* Recipes Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="font-display text-3xl font-bold text-warm-900">
-              Svi recepti
+              {hasFilters ? 'Filtrirani recepti' : 'Svi recepti'}
             </h2>
             <p className="text-warm-600 mt-1">
               {recipes.length} {recipes.length === 1 ? 'recept' : recipes.length < 5 ? 'recepta' : 'recepata'}
@@ -53,9 +87,18 @@ export default async function RecipesPage() {
           </div>
         </div>
 
+        {/* Filters */}
+        <Suspense fallback={null}>
+          <RecipeFilters />
+        </Suspense>
+
         {recipes.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-warm-500 text-lg">Nema recepata za prikaz.</p>
+            <p className="text-warm-500 text-lg">
+              {hasFilters 
+                ? 'Nema recepata koji odgovaraju filtrima.' 
+                : 'Nema recepata za prikaz.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -68,13 +68,15 @@ Push to GitHub. The build script will automatically:
 
 ## Features
 
-- **Recipe List** (`/recepti`) - Browse recipes with difficulty badges, prep time, meal groups
+- **Recipe List** (`/recepti`) - Browse recipes with filtering by difficulty and meal group
 - **Recipe Detail** (`/recepti/[slug]`) - Full recipe with ingredients, steps, and metadata
+- **Search & Filter** - Filter recipes by difficulty, meal group, or search by name
 - **Admin Panel** (`/admin`) - Protected area for creating, editing, and deleting recipes
 - **REST API** - Full CRUD at `/api/recipes`
 - **CDN Simulation** - Images served via a fake CDN route with proper cache headers
 - **SEO** - Dynamic metadata, Open Graph tags, JSON-LD structured data
 - **ISR** - Recipe pages use Incremental Static Regeneration
+- **Unit Tests** - Test coverage for validation, slug generation, and CDN utilities
 
 ---
 
@@ -88,6 +90,7 @@ Push to GitHub. The build script will automatically:
 | Auth | NextAuth.js v5 |
 | Styling | Tailwind CSS |
 | Validation | Zod |
+| Testing | Vitest |
 | Language | TypeScript |
 
 ---
@@ -116,8 +119,10 @@ src/
 │   ├── validation.ts             # Zod schemas
 │   └── slug.ts                   # Slug generation
 ├── middleware.ts                 # Auth middleware
-└── types/
-    └── recipe.ts                 # TypeScript types
+├── types/
+│   └── recipe.ts                 # TypeScript types
+└── __tests__/                    # Unit tests
+    └── lib/                      # Tests for utility functions
 
 prisma/
 ├── schema.prisma                 # Database schema
@@ -219,6 +224,25 @@ The structure is designed so you can easily add more image variants (thumbnails,
 
 ---
 
+## Testing
+
+The project includes unit tests for core utility functions using Vitest.
+
+```bash
+# Run tests once
+npm run test:run
+
+# Run tests in watch mode
+npm test
+```
+
+Tests cover:
+- **Slug generation** - Croatian character handling, special characters, edge cases
+- **Validation schemas** - All Zod schema validation rules
+- **CDN URL builder** - URL construction with different base URLs
+
+---
+
 ## Available Scripts
 
 | Command | Description |
@@ -226,6 +250,8 @@ The structure is designed so you can easily add more image variants (thumbnails,
 | `npm run dev` | Start dev server |
 | `npm run setup:local` | Set up SQLite + seed data |
 | `npm run build` | Production build |
+| `npm run test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once |
 | `npm run db:studio` | Open Prisma Studio |
 | `npm run db:seed` | Re-seed the database |
 
